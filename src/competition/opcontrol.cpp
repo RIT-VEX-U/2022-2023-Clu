@@ -27,6 +27,19 @@ void tuning()
   //   drive_sys.drive_tank(.11, -.11);
 }
 
+#define SHOTLENGTH 100
+#define DELAYLENGTH 300
+void tripleshot()
+{
+  for(int i = 0; i<3; i++)
+  {
+    intake.spin(fwd, 12, volt);
+    vexDelay(SHOTLENGTH);
+    intake.stop();
+    vexDelay(DELAYLENGTH);
+  }  
+}
+
 /**
  * Contains the main loop of the robot code while running in the driver-control period.
  */
@@ -42,10 +55,18 @@ void opcontrol()
   
   //flywheel_sys.spin_manual(3000);//TODO measure speed that is needed
   main_controller.ButtonR1.pressed([](){intake.spin(reverse, 12, volt);}); // Intake
-  main_controller.ButtonR2.pressed([](){intake.spin(fwd, 12, volt);}); // Shoot
-  main_controller.ButtonL2.pressed([](){intake.spin(fwd, 12, volt);oneshot_tmr.reset();}); //Single Shoot
-  main_controller.ButtonL1.pressed([](){roller.spin(fwd);}); //Roller
+  main_controller.ButtonR1.released([](){intake.stop();});
+  main_controller.ButtonR2.pressed(tripleshot); // Shoot
+  main_controller.ButtonL2.pressed([](){
+    intake.spin(fwd, 12, volt);
+    vexDelay(SHOTLENGTH);
+    intake.stop();
+    vexDelay(DELAYLENGTH);
+    }); //Single Shoot
+  main_controller.ButtonL1.pressed([](){roller.spin(reverse, 12, volt);}); //Roller
+  main_controller.ButtonL1.released([](){roller.stop();});
   main_controller.ButtonUp.pressed([](){odometry_sys.set_position();});
+  flywheel_sys.spinRPM(4000);
   timer tmr;
   // Periodic
   while(true)
@@ -65,10 +86,6 @@ void opcontrol()
     }
 
     oneshotting = oneshot_tmr.time(vex::sec) < oneshot_time;
-    if (!main_controller.ButtonR1.pressing() && !main_controller.ButtonR2.pressing() && !oneshotting)
-    {
-      intake.stop();
-    }
 
     // ========== SECONDARY REMOTE ==========
 
