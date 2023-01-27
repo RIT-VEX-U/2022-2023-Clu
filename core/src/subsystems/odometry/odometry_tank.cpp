@@ -1,37 +1,29 @@
 #include "../core/include/subsystems/odometry/odometry_tank.h"
 
 /**
- * Initialize the Odometry module, calculating position from the drive motors.
- * @param left_side The left motors 
- * @param right_side The right motors
- * @param imu The robot's inertial sensor. If not included, rotation is calculated from the encoders.
- */
+* Initialize the Odometry module, calculating position from the drive motors.
+* @param left_side The left motors 
+* @param right_side The right motors
+* @param config the specifications that supply the odometry with descriptions of the robot. See robot_specs_t for what is contained
+* @param imu The robot's inertial sensor. If not included, rotation is calculated from the encoders.
+* @param is_async If true, position will be updated in the background continuously. If false, the programmer will have to manually call update().
+*/
 OdometryTank::OdometryTank(vex::motor_group &left_side, vex::motor_group &right_side, robot_specs_t &config, vex::inertial *imu, bool is_async)
-: left_side(&left_side), right_side(&right_side), left_enc(NULL), right_enc(NULL), imu(imu), config(config)
+: OdometryBase(is_async), left_side(&left_side), right_side(&right_side), left_enc(NULL), right_enc(NULL), imu(imu), config(config)
 {
-    // Make sure the last known info starts zeroed
-    memset(&current_pos, 0, sizeof(position_t));
-
-    // Start the asynchronous background thread
-    if (is_async)
-        handle = new vex::task(background_task, this);
 }
 
 /**
- * Initialize the Odometry module, calculating posiiton from encoders on "dead wheels"
- * @param left_side The left motors 
- * @param right_side The right motors
- * @param imu The robot's inertial sensor. If not included, rotation is calculated from the encoders.
- */
+* Initialize the Odometry module, calculating position from the drive motors.
+* @param left_enc The left motors 
+* @param right_enc The right motors
+* @param config the specifications that supply the odometry with descriptions of the robot. See robot_specs_t for what is contained
+* @param imu The robot's inertial sensor. If not included, rotation is calculated from the encoders.
+* @param is_async If true, position will be updated in the background continuously. If false, the programmer will have to manually call update().
+*/
 OdometryTank::OdometryTank(CustomEncoder &left_enc, CustomEncoder &right_enc, robot_specs_t &config, vex::inertial *imu, bool is_async)
-: left_side(NULL), right_side(NULL), left_enc(&left_enc), right_enc(&right_enc), imu(imu), config(config)
+: OdometryBase(is_async), left_side(NULL), right_side(NULL), left_enc(&left_enc), right_enc(&right_enc), imu(imu), config(config)
 {
-    // Make sure the last known info starts zeroed
-    memset(&current_pos, 0, sizeof(position_t));
-
-    // Start the asynchronous background thread
-    if (is_async)
-        handle = new vex::task(background_task, this);
 }
 
 /**
@@ -40,25 +32,11 @@ OdometryTank::OdometryTank(CustomEncoder &left_enc, CustomEncoder &right_enc, ro
  */
 void OdometryTank::set_position(const position_t &newpos)
 {
+  mut.lock();
   rotation_offset = newpos.rot - (current_pos.rot - rotation_offset);
+  mut.unlock();
 
   OdometryBase::set_position(newpos);
-}
-
-/**
- * The background task constantly polling the motors and updating the position.
- */
-int background_task(void* odom_obj)
-{
-    OdometryTank &odom = *((OdometryTank*) odom_obj);
-    while(!odom.end_task)
-    {
-        odom.update();
-
-        vexDelay(DOWNTIME);
-    }
-
-    return 0;
 }
 
 /**
@@ -67,8 +45,6 @@ int background_task(void* odom_obj)
  */
 position_t OdometryTank::update()
 {
-    position_t updated_pos;
-
     double lside_revs = 0, rside_revs = 0;
 
     if(left_side != NULL && right_side != NULL)
@@ -92,12 +68,11 @@ position_t OdometryTank::update()
       // Get the arclength of the turning circle of the robot
       double distance_diff = (rside_revs - lside_revs) * PI * config.odom_wheel_diam;
 
-      printf("dist_diff: %f, ", distance_diff);
 
       //Use the arclength formula to calculate the angle. Add 90 to make "0 degrees" to starboard
       angle = ((180.0 / PI) * (distance_diff / config.dist_between_wheels)) + 90;
 
-      printf("angle: %f, ", (180.0 / PI) * (distance_diff / config.dist_between_wheels));
+      // printf("angle: %f, ", (180.0 / PI) * (distance_diff / config.dist_between_wheels));
 
     } else
     {
@@ -114,14 +89,37 @@ position_t OdometryTank::update()
     if(angle < 0)
         angle += 360;
 
-    updated_pos = calculate_new_pos(config, current_pos, lside_revs, rside_revs, angle);
+    current_pos = calculate_new_pos(config, current_pos, lside_revs, rside_revs, angle);
 
-    // Update the class' stored position
-    mut.lock();
-    this->current_pos = updated_pos;
-    mut.unlock();
 
-    return updated_pos;
+    static position_t last_pos = current_pos;
+    static double last_speed = 0;
+    static double last_ang_speed = 0;
+    static timer tmr;
+    bool update_vel_accel = tmr.time(sec) > 0.1;
+
+    // This loop runs too fast. Only check at LEAST every 1/10th sec
+    if(update_vel_accel)
+    {
+      // Calculate robot velocity
+      speed = pos_diff(current_pos, last_pos) / tmr.time(sec);
+
+      // Calculate robot acceleration
+      accel = (speed - last_speed) / tmr.time(sec);
+
+      // Calculate robot angular velocity (deg/sec)
+      ang_speed_deg = smallest_angle(current_pos.rot, last_pos.rot) / tmr.time(sec);
+
+      // Calculate robot angular acceleration (deg/sec^2)
+      ang_accel_deg = (ang_speed_deg - last_ang_speed) / tmr.time(sec);
+
+      tmr.reset();
+      last_pos = current_pos;
+      last_speed = speed;
+      last_ang_speed = ang_speed_deg;
+    }
+
+    return current_pos;
 }
 
 /**
@@ -143,6 +141,7 @@ position_t OdometryTank::calculate_new_pos(robot_specs_t &config, position_t &cu
     double angle = angle_deg * PI / 180.0; // Degrees to radians
 
     // Create a vector from the change in distance in the current direction of the robot
+    //deg2rad((smallest_angle(curr_pos.rot, angle_deg)/2 + curr_pos.rot, dist_driven)
     Vector2D chg_vec(angle, dist_driven);
     
     // Create a vector from the current position in reference to X,Y=0,0
@@ -161,19 +160,4 @@ position_t OdometryTank::calculate_new_pos(robot_specs_t &config, position_t &cu
     stored_rside_revs = rside_revs;
 
     return new_pos;
-}
-
-double OdometryTank::get_speed()
-{
-  static position_t last_pos = get_position();
-  static timer speed_tmr;
-
-  double out = 0;
-  if(speed_tmr.value() != 0)
-  {
-    out = pos_diff(last_pos, get_position()) / speed_tmr.time(timeUnits::sec);
-    speed_tmr.reset();
-  }
-  last_pos = get_position();
-  return out;
 }

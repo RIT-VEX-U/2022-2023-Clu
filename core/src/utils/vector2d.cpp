@@ -17,7 +17,7 @@ Vector2D::Vector2D(double dir, double mag)
  * 
  * @param p point_t.x , point_t.y
  */
-Vector2D::Vector2D(point_t &p)
+Vector2D::Vector2D(point_t p)
 {
     this->dir = atan2(p.y, p.x);
     this->mag = sqrt( (p.x*p.x) + (p.y*p.y) );
@@ -61,7 +61,8 @@ Vector2D Vector2D::normalize()
 }
 
 /**
- * Returns a point from the vector
+ * Convert a direction and magnitude representation to an x, y representation
+ * @return the x, y representation of the vector 
 */
 Vector2D::point_t Vector2D::point()
 {
@@ -74,8 +75,12 @@ Vector2D::point_t Vector2D::point()
 }
 
 /**
- * Correctly add vectors together with the + operator
- */
+ * Add the components of two vectors together
+ * Vector2D + Vector2D = (this.x + other.x, this.y + other.y)
+ * @param other the vector to add to this
+ * @return the sum of the vectors
+*/
+
 Vector2D Vector2D::operator+(const Vector2D &other)
 {
     point_t p = 
@@ -88,8 +93,11 @@ Vector2D Vector2D::operator+(const Vector2D &other)
 }
 
 /**
- * Correctly subtract vectors with the - operator
- */
+ * Subtract the components of two vectors together
+ * Vector2D - Vector2D = (this.x - other.x, this.y - other.y)
+ * @param other the vector to subtract from this
+ * @return the difference of the vectors
+*/
 Vector2D Vector2D::operator-(const Vector2D &other)
 {
     point_t p = 
@@ -101,7 +109,9 @@ Vector2D Vector2D::operator-(const Vector2D &other)
 }
 
 /**
- * Multiplies a vector by a double with the * operator
+ * Scales a Vector2D by a scalar with the * operator
+ * @param x the value to scale the vector by
+ * @return the this Vector2D scaled by x
 */
 Vector2D Vector2D::operator*(const double &x)
 {
