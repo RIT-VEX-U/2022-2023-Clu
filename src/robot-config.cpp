@@ -9,16 +9,16 @@ controller main_controller;
 // ======== OUTPUTS ========
 
 // Drive
-motor left_front(PORT20, vex::gearSetting::ratio18_1, true), left_mid(PORT8, vex::gearSetting::ratio18_1, true), left_rear(PORT9, vex::gearSetting::ratio18_1, true);
-motor right_front(PORT11, vex::gearSetting::ratio18_1), right_mid(PORT1, vex::gearSetting::ratio18_1), right_rear(PORT2, vex::gearSetting::ratio18_1);
+motor left_front(PORT20, vex::gearSetting::ratio18_1, true), left_mid(PORT8, vex::gearSetting::ratio18_1, true), left_rear(PORT7, vex::gearSetting::ratio18_1, true);
+motor right_front(PORT11, vex::gearSetting::ratio18_1), right_mid(PORT5, vex::gearSetting::ratio18_1), right_rear(PORT1, vex::gearSetting::ratio18_1);
 
 motor_group left_motors(left_front, left_mid, left_rear);
 motor_group right_motors(right_front, right_mid, right_rear);
 
 // Manipulation 
-motor flywheel(PORT12);
-motor intake(PORT19);
-motor roller(PORT5);
+motor flywheel(PORT14);
+motor intake(PORT13);
+motor roller(PORT4);
 
 motor_group flywheel_motors(flywheel);
 
@@ -29,7 +29,7 @@ vex::digital_out endgame_solenoid(Brain.ThreeWirePort.H); //TODO make this an ac
 CustomEncoder left_enc(Brain.ThreeWirePort.A, 2048);
 CustomEncoder right_enc(Brain.ThreeWirePort.C, 2048);
 
-inertial imu(PORT4);
+inertial imu(PORT12);
 
 // ======== UTILS ========
 
