@@ -48,7 +48,7 @@ void autonomous()
 
 /*
 Auto loader side
-
+OBOT
 Map from page 40 of the game manual
 
 (R) = Red Hoop, Blue Zone
@@ -80,7 +80,7 @@ CommandController auto_loader_side(){
 
     // spin -90 degree roller
     lsa.add(new DriveForwardCommand(drive_sys, drive_slow_mprofile, 1, fwd)); //[measure]
-    lsa.add(new SpinRollerCommand(drive_sys, roller));
+    lsa.add(new SpinRollerCommandAUTO(drive_sys, roller));
     lsa.add(new DriveForwardCommand(drive_sys, drive_slow_mprofile, 4, reverse)); // [measure]
     
     //shoot
@@ -94,14 +94,14 @@ CommandController auto_loader_side(){
 
 /*
 Auto Non-loader side
-
+JOEBOT
 Map from page 40 of the game manual
 
 (R) = Red Hoop, Blue Zone
 (B) = Blue Hoop, Red Zone
  *  = Starting position for this auto
            ^ 180 degrees
-  +-------------------+
+  0-------------------+
   |        |*___| (R) |
   |___           |    |
   |   |          |    |
@@ -116,30 +116,32 @@ Map from page 40 of the game manual
  Align robot to specified place and angle using NON LOADER SIDE AUTO jig
 */
 CommandController auto_non_loader_side(){
-    int non_loader_side_shot_rpm = 3000;  // [measure]
+    int non_loader_side_shot_rpm = 3200;  // [measure]
     CommandController nlsa;
-    position_t start_pos = {.x = 128, .y = 84, .rot = 90}; // [measure]
+    position_t start_pos = {.x = 128, .y = 89, .rot = 90}; // [measure]
     nlsa.add(new OdomSetPosition(odometry_sys, start_pos));
+
+    nlsa.add(new SpinRawCommand(flywheel, 12));
     // Arrow 1 -------------------
-    nlsa.add(new DriveToPointCommand(drive_sys, drive_fast_mprofile, 128, 96, fwd, 1)); // [measure]
-    nlsa.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 0, TURN_SPEED)); // [measure]
-    
+    nlsa.add(new DriveToPointCommand(drive_sys, drive_fast_mprofile, 127.9, 114, fwd, 1)); // [measure]
+    nlsa.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 0, .6)); // [measure]
     
     // Arrow 2 -------------------
-    nlsa.add(new DriveForwardCommand(drive_sys, drive_fast_mprofile, 2, fwd, 1)); // [measure]
-    nlsa.add(new SpinRollerCommand(drive_sys, roller));
-    nlsa.add(new DriveForwardCommand(drive_sys, drive_fast_mprofile, 2, reverse, 1)); // [measure]
+    nlsa.add(new DriveForwardCommand(drive_sys, drive_fast_mprofile, 4, fwd, 1)); // [measure]
+    nlsa.add(new SpinRollerCommandAUTO(drive_sys, roller));
+    nlsa.add(new DriveForwardCommand(drive_sys, drive_fast_mprofile, 12, reverse, 1)); // [measure]
 
     // Spin and shoot
-    nlsa.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 170, TURN_SPEED)); //[measure]
-    nlsa.add(new DriveToPointCommand(drive_sys, drive_fast_mprofile, 0, 0, directionType::fwd, 1)); //[ measure]
-    nlsa.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 0, 0.6)); // [measure]
-    nlsa.add(new SpinRPMCommand(flywheel_sys, non_loader_side_shot_rpm));
+    nlsa.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 225, .6)); //[measure]
+    nlsa.add(new DriveToPointCommand(drive_sys, drive_fast_mprofile, 89, 76.5, directionType::fwd, 1)); //[ measure]
+    nlsa.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 145, 0.6)); // [measure]
+
     nlsa.add(new WaitUntilUpToSpeedCommand(flywheel_sys, 10));
-    nlsa.add(new ShootCommand(intake, 3, 2)); // [measure]
+    nlsa.add(new ShootCommand(intake, 3, .25)); // [measure]
+    
+    return nlsa;
     return nlsa;
 }
-
 
 /*
 Skills loader side
@@ -175,7 +177,7 @@ CommandController prog_skills_loader_side(){
     // Arrow 1 -------------------------
     // spin -90 degree roller
     lss.add(new DriveForwardCommand(drive_sys, drive_slow_mprofile, 1, fwd)); //[measure]
-    lss.add(new SpinRollerCommand(drive_sys, roller));
+    lss.add(new SpinRollerCommandAUTO(drive_sys, roller));
     lss.add(new DriveForwardCommand(drive_sys, drive_slow_mprofile, 4, reverse)); // [measure]
     
     lss.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 180, TURN_SPEED)); //[measure]
@@ -193,7 +195,7 @@ CommandController prog_skills_loader_side(){
     
     // spin 180 degree roller
     lss.add(new DriveForwardCommand(drive_sys, drive_slow_mprofile, 2, fwd)); //[measure]
-    lss.add(new SpinRollerCommand(drive_sys, roller));
+    lss.add(new SpinRollerCommandAUTO(drive_sys, roller));
     lss.add(new DriveForwardCommand(drive_sys, drive_fast_mprofile, 2, reverse)); //[measure]
 
     //spin and shoot 3
@@ -269,7 +271,7 @@ CommandController prog_skills_non_loader_side(){
     
     // Arrow 2 -------------------
   nlss.add(new DriveForwardCommand(drive_sys, drive_fast_mprofile, 2, fwd, 1)); // [measure]
-  nlss.add(new SpinRollerCommand(drive_sys, roller)); 
+  nlss.add(new SpinRollerCommandAUTO(drive_sys, roller)); 
   nlss.add(new DriveForwardCommand(drive_sys, drive_fast_mprofile, 2, reverse, 1)); // [measure]
 
 

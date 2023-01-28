@@ -58,11 +58,11 @@ void tune_odometry_wheel_diam()
         printf("Diam: 0\n");
       return;
     }
-    double diam = 100.0 / (avg * PI);
+    double diam = 120.0 / (avg * PI);
 
     main_controller.Screen.clearScreen();
     main_controller.Screen.setCursor(1,1);
-    main_controller.Screen.print("Push robot 100 inches");
+    main_controller.Screen.print("Push robot 120 inches");
     main_controller.Screen.setCursor(2,1);
     main_controller.Screen.print("Diam: %f", diam);
     printf("Diam: %f\n", diam);

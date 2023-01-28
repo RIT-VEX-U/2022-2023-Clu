@@ -6,14 +6,14 @@
 /**
  * SpinRollerCommand is an ACS command that tells the robot spin the roller to the team color
 */
-class SpinRollerCommand: public AutoCommand {
+class SpinRollerCommandAUTO: public AutoCommand {
   public:
     /**
     * Construct a SpinRollerCommand
     * @param drive_sys the drivetrain tha will let us apply pressure to spin the roller
     * @param roller_motor The motor that will spin the roller
     */
-    SpinRollerCommand(TankDrive &drive_sys, vex::motor roller_motor);
+    SpinRollerCommandAUTO(TankDrive &drive_sys, vex::motor roller_motor);
 
     /**
      * Run roller controller to spin the roller to our color
@@ -75,6 +75,22 @@ class StartIntakeCommand : public AutoCommand{
   private:
     vex::motor intaking_motor;
     double intaking_voltage;
+
+};
+
+class SpinRawCommand : public AutoCommand{
+  public:
+    SpinRawCommand(vex::motor flywheel_motor, double voltage);
+    /**
+     * Run the intaking motor to drag a disk into the chamber
+     * Overrides run from AutoCommand
+     * @returns true when execution is complete, false otherwise
+     */
+    bool run() override;
+
+  private:
+    vex::motor flywheel_motor;
+    double voltage;
 
 };
 

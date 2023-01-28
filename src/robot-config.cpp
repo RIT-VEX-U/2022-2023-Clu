@@ -35,7 +35,7 @@ inertial imu(PORT12);
 
 // Drive Tuning
 PID::pid_config_t drive_pid_cfg = {
-    .p = .025,
+    .p = .0575,
     .i = 0, 
     .d = 0,
     .deadband = 2,
@@ -50,7 +50,7 @@ FeedForward::ff_config_t drive_ff_cfg = {
 
 MotionController::m_profile_cfg_t drive_fast_mprofile_cfg = {
     .max_v = 40,// MAX = 48,
-    .accel = 150, // MAX = 200
+    .accel = 145, // MAX = 200
     .pid_cfg = drive_pid_cfg,
     .ff_cfg = drive_ff_cfg
 };
@@ -65,7 +65,7 @@ MotionController::m_profile_cfg_t drive_slow_mprofile_cfg = {
 
 // Turn Tuning
 PID::pid_config_t turn_pid_cfg = {
-    .p = .012,
+    .p = .015,
     .i = 0, 
     .d = .001,
     .deadband = 5,
@@ -101,7 +101,7 @@ robot_specs_t config = {
     .robot_radius = 10,
     .odom_wheel_diam = 6.374,
     .odom_gear_ratio = 1, // .44    16:12
-    .dist_between_wheels = 10.163,
+    .dist_between_wheels = 10.24,
 
     .drive_correction_cutoff = 4,
 
@@ -116,7 +116,7 @@ robot_specs_t config = {
 
 // Flywheel Tuning
 FeedForward::ff_config_t flywheel_ff_cfg = {
-  .kV =  0.0003 
+  .kV =  0.0003
 };
 
 PID::pid_config_t flywheel_pid_cfg = {
@@ -136,6 +136,7 @@ Flywheel flywheel_sys(flywheel_motors, flywheel_pid_cfg, flywheel_ff_cfg, 18);
 vex::timer oneshot_tmr;
 
 AutoChooser autochooser(Brain);
+
 
 std::string AutoLoaderSideDisplayName = "Auto Loader Side";
 std::string AutoNonLoaderSideDisplayName = "Auto Non Loader Side";
