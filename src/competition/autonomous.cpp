@@ -40,8 +40,16 @@ void autonomous()
     // while(!imu.is_calibrating){
     //  vexDelay(20);
     // }
-    CommandController current_auto = get_chosen_auto();   
+    // CommandController current_auto = get_chosen_auto();
+    CommandController current_auto = prog_skills_non_loader_side();   
     current_auto.run();
+
+    while(true)
+    {
+        drive_sys.stop();
+        flywheel_sys.stop();
+        vexDelay(20);
+    }
 
 }
 
@@ -121,25 +129,26 @@ CommandController auto_non_loader_side(){
     position_t start_pos = {.x = 128, .y = 89, .rot = 90}; // [measure]
     nlsa.add(new OdomSetPosition(odometry_sys, start_pos));
 
-    nlsa.add(new SpinRawCommand(flywheel, 12));
+    // nlsa.add(new SpinRawCommand(flywheel, 12));
     // Arrow 1 -------------------
-    nlsa.add(new DriveToPointCommand(drive_sys, drive_fast_mprofile, 127.9, 114, fwd, 1)); // [measure]
-    nlsa.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 0, .6)); // [measure]
+    nlsa.add(new DriveToPointCommand(drive_sys, drive_fast_mprofile, 127.9, 115, fwd, 1)); // [measure]
+    nlsa.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 15, .6)); // [measure]
     
     // Arrow 2 -------------------
-    nlsa.add(new DriveForwardCommand(drive_sys, drive_fast_mprofile, 4, fwd, 1)); // [measure]
-    nlsa.add(new SpinRollerCommandAUTO(drive_sys, roller));
-    nlsa.add(new DriveForwardCommand(drive_sys, drive_fast_mprofile, 12, reverse, 1)); // [measure]
+    nlsa.add(new DriveForwardCommand(drive_sys, drive_fast_mprofile, 5, fwd, 1)); // [measure]
+    // nlsa.add(new SpinRollerCommandAUTO(drive_sys, roller));
+    nlsa.add(new SpinRollerCommandSkills(drive_sys, roller));
+    nlsa.add(new OdomSetPosition(odometry_sys, {.x=0, .y=0, .rot=15}));
+    nlsa.add(new DriveForwardCommand(drive_sys, drive_fast_mprofile, 6, reverse, 1)); // [measure]
 
     // Spin and shoot
-    nlsa.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 225, .6)); //[measure]
-    nlsa.add(new DriveToPointCommand(drive_sys, drive_fast_mprofile, 89, 76.5, directionType::fwd, 1)); //[ measure]
-    nlsa.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 145, 0.6)); // [measure]
+    nlsa.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 45, .6)); //[measure]
+    // nlsa.add(new DriveToPointCommand(drive_sys, drive_fast_mprofile, 89, 76.5, directionType::fwd, 1)); //[ measure]
+    // nlsa.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 145, 0.6)); // [measure]
 
-    nlsa.add(new WaitUntilUpToSpeedCommand(flywheel_sys, 10));
-    nlsa.add(new ShootCommand(intake, 3, .25)); // [measure]
+    // nlsa.add(new WaitUntilUpToSpeedCommand(flywheel_sys, 10));
+    // nlsa.add(new ShootCommand(intake, 3, .25)); // [measure]
     
-    return nlsa;
     return nlsa;
 }
 
@@ -258,22 +267,29 @@ Map from page 40 of the game manual
  Align robot to specified place and angle using NON LOADER SIDE SKILLS jig
 */
 CommandController prog_skills_non_loader_side(){
-
-  CommandController nlss;
-  
-  position_t start_pos = {.x = 128, .y = 84, .rot = 90}; // [measure]
-  nlss.add(new OdomSetPosition(odometry_sys, start_pos));
-
-  // Arrow 1 -------------------
-  nlss.add(new DriveToPointCommand(drive_sys, drive_fast_mprofile, 128, 96, fwd, 1)); // [measure]
-  nlss.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 0, 1)); // [measure]
+    CommandController nlss = auto_non_loader_side();
+    // CommandController nlss;
+    nlss.add_delay(20000);
+    nlss.add(new EndgameCommand(endgame_solenoid));
     
-    
+    return nlss;
+
+    /*
+    CommandController nlss;
+
+    position_t start_pos = {.x = 128, .y = 84, .rot = 90}; // [measure]
+    nlss.add(new OdomSetPosition(odometry_sys, start_pos));
+
+    // Arrow 1 -------------------
+    nlss.add(new DriveToPointCommand(drive_sys, drive_fast_mprofile, 128, 96, fwd, 1)); // [measure]
+    nlss.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 0, 1)); // [measure]
+
+
     // Arrow 2 -------------------
-  nlss.add(new DriveForwardCommand(drive_sys, drive_fast_mprofile, 2, fwd, 1)); // [measure]
-  nlss.add(new SpinRollerCommandAUTO(drive_sys, roller)); 
-  nlss.add(new DriveForwardCommand(drive_sys, drive_fast_mprofile, 2, reverse, 1)); // [measure]
-
+    nlss.add(new DriveForwardCommand(drive_sys, drive_fast_mprofile, 2, fwd, 1)); // [measure]
+    nlss.add(new SpinRollerCommandAUTO(drive_sys, roller)); 
+    nlss.add(new DriveForwardCommand(drive_sys, drive_fast_mprofile, 2, reverse, 1)); // [measure]
+    */
 
   return nlss;
 }

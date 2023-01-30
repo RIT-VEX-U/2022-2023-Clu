@@ -30,6 +30,31 @@ class SpinRollerCommandAUTO: public AutoCommand {
     TankDrive &drive_sys;
 };
 
+class SpinRollerCommandSkills : public AutoCommand
+{
+  public:
+    /**
+    * Construct a SpinRollerCommandSkills
+    * @param drive_sys the drivetrain tha will let us apply pressure to spin the roller
+    * @param roller_motor The motor that will spin the roller
+    */
+    SpinRollerCommandSkills(TankDrive &drive_sys, vex::motor roller_motor);
+
+    /**
+     * Run roller controller to spin the roller to our color
+     * Overrides run from AutoCommand
+     * @returns true when execution is complete, false otherwise
+     */
+    bool run() override;
+
+    private:
+        vex::motor roller_motor;
+        bool func_initialized;
+        double start_pos;
+        double target_pos;
+        TankDrive &drive_sys;
+};
+
 
 /**
  * ShootCommand is an ACS command that tells the robot to shoot the disks for a certain amount of time

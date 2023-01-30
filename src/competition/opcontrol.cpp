@@ -67,13 +67,12 @@ void opcontrol()
   main_controller.ButtonL1.pressed([](){roller.spin(reverse, 12, volt);}); //Roller
   main_controller.ButtonL1.released([](){roller.stop();});
   main_controller.ButtonUp.pressed([](){odometry_sys.set_position();});
-  flywheel_sys.spinRPM(4000);
   timer tmr;
+  flywheel_sys.spinRPM(4000);
+
   // Periodic
   while(true)
   {
-    
-
     // ========== DRIVING CONTROLS ==========
     drive_sys.drive_tank(main_controller.Axis3.position()/100.0,main_controller.Axis2.position() / 100.0);
     // drive_sys.drive_arcade(main_controller.Axis3.position()/100.0, main_controller.Axis1.position()/100.0);
