@@ -140,7 +140,6 @@ CommandController auto_non_loader_side(){
     nlsa.add(new ShootCommand(intake, 3, .25)); // [measure]
     
     return nlsa;
-    return nlsa;
 }
 
 /*

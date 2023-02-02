@@ -50,43 +50,43 @@ void opcontrol()
   // Initialization
   printf("starting\n");
   fflush(stdout);
-  double oneshot_time = .05;//Change 1 second to whatever is needed
-  bool oneshotting = false;
-  
-  //flywheel_sys.spin_manual(3000);//TODO measure speed that is needed
-  main_controller.ButtonR1.pressed([](){intake.spin(reverse, 12, volt);}); // Intake
+
+  // Intake - R1
+  main_controller.ButtonR1.pressed([](){intake.spin(reverse, 12, volt);}); 
   main_controller.ButtonR1.released([](){intake.stop();});
-  main_controller.ButtonR2.pressed([](){intake.spin(fwd, 12, volt);}); // Shoot
+
+  // Shoot - R2
+  main_controller.ButtonR2.pressed([](){intake.spin(fwd, 12, volt);}); 
   main_controller.ButtonR2.released([](){intake.stop();});
+
+  // Roller - L1
+  main_controller.ButtonL1.pressed([](){roller.spin(reverse, 12, volt);}); 
+  main_controller.ButtonL1.released([](){roller.stop();});
+
+  // Single Shot - L2
   main_controller.ButtonL2.pressed([](){
     intake.spin(fwd, 12, volt);
     vexDelay(SHOTLENGTH);
     intake.stop();
     vexDelay(DELAYLENGTH);
-    }); //Single Shoot
-  main_controller.ButtonL1.pressed([](){roller.spin(reverse, 12, volt);}); //Roller
-  main_controller.ButtonL1.released([](){roller.stop();});
-  main_controller.ButtonUp.pressed([](){odometry_sys.set_position();});
+    });
+ 
+  // Flywheel set RPM 
   flywheel_sys.spinRPM(4000);
   timer tmr;
+
   // Periodic
   while(true)
   {
-    
-
     // ========== DRIVING CONTROLS ==========
     drive_sys.drive_tank(main_controller.Axis3.position()/100.0,main_controller.Axis2.position() / 100.0);
     // drive_sys.drive_arcade(main_controller.Axis3.position()/100.0, main_controller.Axis1.position()/100.0);
     
     // ========== MANIPULATING CONTROLS ==========
-
-
     if(main_controller.ButtonY.pressing() && main_controller.ButtonRight.pressing())
     {
       endgame_solenoid.set(true);
     }
-
-    oneshotting = oneshot_tmr.time(vex::sec) < oneshot_time;
 
     // ========== SECONDARY REMOTE ==========
 
