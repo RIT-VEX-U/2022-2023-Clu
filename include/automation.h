@@ -13,7 +13,7 @@ class SpinRollerCommandAUTO: public AutoCommand {
     * @param drive_sys the drivetrain tha will let us apply pressure to spin the roller
     * @param roller_motor The motor that will spin the roller
     */
-    SpinRollerCommandAUTO(TankDrive &drive_sys, vex::motor roller_motor);
+    SpinRollerCommandAUTO(TankDrive &drive_sys, vex::motor &roller_motor);
 
     /**
      * Run roller controller to spin the roller to our color
@@ -23,7 +23,7 @@ class SpinRollerCommandAUTO: public AutoCommand {
     bool run() override;
   
   private:
-    vex::motor roller_motor;
+    vex::motor &roller_motor;
     bool func_initialized;
     double start_pos;
     double target_pos;
@@ -42,7 +42,7 @@ class ShootCommand : public AutoCommand{
      * @param seconds_to_shoot the time in seconds that we will try to shoot for 
      * @param volt the voltage to run the intake at. lower volts means flywheel has more time to recover
      */
-    ShootCommand(vex::motor firing_motor, double seconds_to_shoot, double volt);
+    ShootCommand(vex::motor &firing_motor, double seconds_to_shoot, double volt);
     /**
      * Run the firing motor to slap the disk into the flywheel
      * Overrides run from AutoCommand
@@ -51,7 +51,7 @@ class ShootCommand : public AutoCommand{
     bool run() override;
 
   private:
-    vex::motor firing_motor;
+    vex::motor &firing_motor;
     bool func_initialized;
     double seconds_to_shoot;
     double volt;
@@ -64,7 +64,7 @@ class ShootCommand : public AutoCommand{
 */
 class StartIntakeCommand : public AutoCommand{
   public:
-    StartIntakeCommand(vex::motor intaking_motor, double intaking_voltage);
+    StartIntakeCommand(vex::motor &intaking_motor, double intaking_voltage);
     /**
      * Run the intaking motor to drag a disk into the chamber
      * Overrides run from AutoCommand
@@ -73,14 +73,14 @@ class StartIntakeCommand : public AutoCommand{
     bool run() override;
 
   private:
-    vex::motor intaking_motor;
+    vex::motor &intaking_motor;
     double intaking_voltage;
 
 };
 
 class SpinRawCommand : public AutoCommand{
   public:
-    SpinRawCommand(vex::motor flywheel_motor, double voltage);
+    SpinRawCommand(vex::motor &flywheel_motor, double voltage);
     /**
      * Run the intaking motor to drag a disk into the chamber
      * Overrides run from AutoCommand
@@ -89,7 +89,7 @@ class SpinRawCommand : public AutoCommand{
     bool run() override;
 
   private:
-    vex::motor flywheel_motor;
+    vex::motor &flywheel_motor;
     double voltage;
 
 };
@@ -99,7 +99,7 @@ class SpinRawCommand : public AutoCommand{
 */
 class StopIntakeCommand : public AutoCommand{
   public:
-    StopIntakeCommand(vex::motor intaking_motor);
+    StopIntakeCommand(vex::motor &intaking_motor);
     /**
      * Run the intaking motor to drag a disk into the chamber
      * Overrides run from AutoCommand
@@ -108,7 +108,7 @@ class StopIntakeCommand : public AutoCommand{
     bool run() override;
 
   private:
-    vex::motor intaking_motor;
+    vex::motor &intaking_motor;
 
 };
 
@@ -118,9 +118,31 @@ class EndgameCommand : public AutoCommand{
     * Construct and Endgame command
     * this is the one that shoots the string
     */
-    EndgameCommand(vex::digital_out solenoid);
+    EndgameCommand(vex::digital_out &solenoid);
 
     bool run() override;
   private:
-    vex::digital_out solenoid;
+    vex::digital_out &solenoid;
+};
+
+/**
+ * ACS Command for targetting the high goal with vision using PID
+*/
+class VisionAimCommand : public AutoCommand
+{
+  public:
+  /**
+   * Contstruct a new VisionAimCommmand
+  */
+    VisionAimCommand(vision &cam, vision::signature &sig, TankDrive &drive_sys);
+
+    bool run() override;
+
+  private:
+
+  vision &cam;
+  vision::signature &sig;
+  TankDrive &drive_sys;
+  PID pid;
+  timer tmr;
 };

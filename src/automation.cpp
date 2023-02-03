@@ -7,7 +7,7 @@
 * @param drive_sys the drive train that will allow us to apply pressure on the rollers
 * @param roller_motor The motor that will spin the roller
 */
-SpinRollerCommandAUTO::SpinRollerCommandAUTO(TankDrive &drive_sys, vex::motor roller_motor): roller_motor(roller_motor), drive_sys(drive_sys){};
+SpinRollerCommandAUTO::SpinRollerCommandAUTO(TankDrive &drive_sys, vex::motor &roller_motor): roller_motor(roller_motor), drive_sys(drive_sys){};
 
 /**
  * Run roller controller to spin the roller to our color
@@ -51,7 +51,7 @@ bool SpinRollerCommandAUTO::run() {
 * Construct a ShootCommand
 * @param firing_motor The motor that will spin the disk into the flywheel
 */
-ShootCommand::ShootCommand(vex::motor firing_motor, double seconds_to_shoot, double volt): firing_motor(firing_motor), seconds_to_shoot(seconds_to_shoot), volt(volt){}
+ShootCommand::ShootCommand(vex::motor &firing_motor, double seconds_to_shoot, double volt): firing_motor(firing_motor), seconds_to_shoot(seconds_to_shoot), volt(volt){}
 
 /**
  * Run the intake motor backward to move the disk into the flywheel
@@ -80,7 +80,7 @@ bool ShootCommand::run(){
 * @param intaking_motor The motor that will pull the disk into the robot
 * @param intaking_voltage The voltage at which to run the intake motor
 */
-StartIntakeCommand::StartIntakeCommand(vex::motor intaking_motor, double intaking_voltage):intaking_motor(intaking_motor), intaking_voltage(intaking_voltage){}
+StartIntakeCommand::StartIntakeCommand(vex::motor &intaking_motor, double intaking_voltage):intaking_motor(intaking_motor), intaking_voltage(intaking_voltage){}
 
 /**
  * Run the StartIntakeCommand
@@ -93,7 +93,7 @@ bool StartIntakeCommand::run(){
   return true;
 }
 
-SpinRawCommand::SpinRawCommand(vex::motor flywheel_motor, double voltage):flywheel_motor(flywheel_motor), voltage(voltage){}
+SpinRawCommand::SpinRawCommand(vex::motor &flywheel_motor, double voltage):flywheel_motor(flywheel_motor), voltage(voltage){}
 
 /**
  * Run the StartIntakeCommand
@@ -110,7 +110,7 @@ bool SpinRawCommand::run(){
 * Construct a StartIntakeCommand
 * @param intaking_motor The motor that will be stopped
 */
-StopIntakeCommand::StopIntakeCommand(vex::motor intaking_motor):intaking_motor(intaking_motor){}
+StopIntakeCommand::StopIntakeCommand(vex::motor &intaking_motor):intaking_motor(intaking_motor){}
 
 /**
  * Run the StopIntakeCommand
@@ -122,8 +122,53 @@ bool StopIntakeCommand::run(){
   return true;
 }
 
-EndgameCommand::EndgameCommand(vex::digital_out solenoid): solenoid(solenoid){}
+EndgameCommand::EndgameCommand(vex::digital_out &solenoid): solenoid(solenoid){}
 bool EndgameCommand::run(){
   solenoid.set(true);
   return true;
+}
+
+PID::pid_config_t vis_pid_cfg = {
+  .p = 0,
+  .d = 0,
+  .deadband = 0,
+  .on_target_time = 0
+};
+
+#define VISION_CENTER 0
+#define NOT_DETECTED_TIME 2
+#define MAX_SPEED 0.5
+
+VisionAimCommand::VisionAimCommand(vision &cam, vision::signature &sig, TankDrive &drive_sys): cam(cam), sig(sig), drive_sys(drive_sys), pid(vis_pid_cfg){}
+
+/**
+ * Run the VisionAimCommand
+ * Overrides run from AutoCommand
+ * @returns true when execution is complete, false otherwise
+*/
+bool VisionAimCommand::run()
+{
+  // If the camera isn't installed, move on to the next command
+  if(!cam.installed())
+    return true;
+  
+  cam.takeSnapshot(sig, 1);
+  if(cam.objectCount > 0)
+  {
+    pid.set_target(VISION_CENTER);
+    pid.set_limits(-MAX_SPEED, MAX_SPEED);
+
+    vision::object obj = cam.largestObject;
+    double out = pid.update(obj.centerX);
+    drive_sys.drive_tank(out, -out);
+
+    if(pid.is_on_target())
+      return true;
+
+  } else
+  {
+    drive_sys.stop();
+  }
+
+  return false;
 }
