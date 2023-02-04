@@ -1,5 +1,6 @@
 #include "../include/automation.h"
 #include "robot-config.h"
+#include "vision.h"
 
 
 /**
@@ -128,6 +129,8 @@ bool EndgameCommand::run(){
   return true;
 }
 
+// ========= VISION AIMING =========
+
 PID::pid_config_t vis_pid_cfg = {
   .p = 0,
   .d = 0,
@@ -139,7 +142,7 @@ PID::pid_config_t vis_pid_cfg = {
 #define NOT_DETECTED_TIME 2
 #define MAX_SPEED 0.5
 
-VisionAimCommand::VisionAimCommand(vision &cam, initializer_list<vision::signature> sigs, TankDrive &drive_sys): cam(cam), sig_vec(sigs), drive_sys(drive_sys), pid(vis_pid_cfg) 
+VisionAimCommand::VisionAimCommand(vision &cam, std::initializer_list<vision::signature> sigs, TankDrive &drive_sys): cam(cam), sig_vec(sigs), drive_sys(drive_sys), pid(vis_pid_cfg) 
 {}
 VisionAimCommand::VisionAimCommand(vision &cam, vision::signature sig, TankDrive &drive_sys): cam(cam), sig_vec({sig}), drive_sys(drive_sys), pid(vis_pid_cfg)
 {}
