@@ -6,6 +6,7 @@
 #define TURN_SPEED 0.6
 #define INTAKE_VOLT 12
 #define SHOOTING_RPM 3500
+#define THRESHOLD_RPM 150
 #define SINGLE_SHOT_TIME 0.2
 #define SINGLE_SHOT_VOLT 12
 #define SINGLE_SHOT_RECOVER_DELAY 1
@@ -22,7 +23,7 @@
 
 // shooting commands
 #define AUTO_AIM (new VisionAimCommand(cam, {RED_GOAL, BLUE_GOAL}, drive_sys))
-#define WAIT_FOR_FLYWHEEL (new WaitUntilUpToSpeedCommand(flywheel_sys, SHOOTING_RPM))
+#define WAIT_FOR_FLYWHEEL (new WaitUntilUpToSpeedCommand(flywheel_sys, THRESHOLD_RPM))
 #define SHOOT_DISK (new ShootCommand(intake, SINGLE_SHOT_TIME, SINGLE_SHOT_VOLT))
 
 void add_single_shot_cmd(CommandController &controller, double vis_timeout=0.0)
@@ -63,55 +64,54 @@ CommandController auto_non_loader_side(){
     CommandController nlsa;
 
     // Initialization
-    position_t start_pos = {.x = 128, .y = 89, .rot = 90}; // [measure]
+    position_t start_pos = {.x=0, .y=0, .rot=90}; 
     nlsa.add(new OdomSetPosition(odometry_sys, start_pos));
-    nlsa.add(new SpinRPMCommand(flywheel_sys, 3500)); // [measure]
 
     // Arrow 1 -------------------
-    nlsa.add(new DriveToPointCommand(drive_sys, drive_fast_mprofile, 127.9, 114, fwd, 1)); // [measure]
-    nlsa.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 0, .6)); // [measure]
+    nlsa.add(DRIVE_TO_POINT_FAST(127.9, 114, fwd));
+    nlsa.add(TURN_TO_HEADING(0));
     
     // Arrow 2 -------------------
-    nlsa.add(new DriveForwardCommand(drive_sys, drive_fast_mprofile, 4, fwd, 1)); // [measure]
+    nlsa.add(DRIVE_FORWARD_FAST(4, fwd));
     nlsa.add(new SpinRollerCommandAUTO(drive_sys, roller));
-    nlsa.add(new DriveForwardCommand(drive_sys, drive_fast_mprofile, 12, reverse, 1)); // [measure]
+    nlsa.add(DRIVE_FORWARD_FAST(12, rev));
 
     // Spin and shoot
-    nlsa.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 225, .6)); //[measure]
-    nlsa.add(new DriveToPointCommand(drive_sys, drive_fast_mprofile, 89, 76.5, directionType::fwd, 1)); // [measure]
-    nlsa.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 145, 0.6)); // [measure]
-    nlsa.add(new VisionAimCommand(cam, {BLUE_GOAL, RED_GOAL}, drive_sys), 3);
-    nlsa.add(new WaitUntilUpToSpeedCommand(flywheel_sys, 10));
-    nlsa.add(new ShootCommand(intake, 3, .25)); // [measure]
+    nlsa.add(new SpinRPMCommand(flywheel_sys, SHOOTING_RPM)); 
+    nlsa.add(TURN_TO_HEADING(225));
+    nlsa.add(DRIVE_TO_POINT_FAST(89, 76.5, fwd));
+    nlsa.add(TURN_TO_HEADING(145));
+    add_single_shot_cmd(nlsa, 3);
+    add_single_shot_cmd(nlsa, 3);
 
     // NORMAL STOP
     return nlsa;
 
     // Furthur auto testing
     // Drive towards the 3 disks along the barrier
-    nlsa.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 0, TURN_SPEED));
-    nlsa.add(new DriveToPointCommand(drive_sys, drive_fast_mprofile, 0, 0, directionType::fwd));
-    nlsa.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 0, 0.6));
+    nlsa.add(TURN_TO_HEADING(0));
+    nlsa.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
+    nlsa.add(TURN_TO_HEADING(0));
 
     // Pick up the first
     nlsa.add(new StartIntakeCommand(intake, INTAKE_VOLT));
-    nlsa.add(new DriveToPointCommand(drive_sys, drive_slow_mprofile, 0, 0, directionType::fwd), 3);
-    nlsa.add(new DriveToPointCommand(drive_sys, drive_fast_mprofile, 0, 0, directionType::rev));
+    nlsa.add(DRIVE_TO_POINT_SLOW(0, 0, fwd), 3);
+    nlsa.add(DRIVE_TO_POINT_FAST(0, 0, rev));
 
     // Pick up second disk
-    nlsa.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 0, TURN_SPEED));
-    nlsa.add(new DriveToPointCommand(drive_sys, drive_slow_mprofile, 0, 0, directionType::fwd), 3);
-    nlsa.add(new DriveToPointCommand(drive_sys, drive_fast_mprofile, 0, 0, directionType::rev));
-
+    nlsa.add(TURN_TO_HEADING(0));
+    nlsa.add(DRIVE_TO_POINT_SLOW(0, 0, fwd), 3);
+    nlsa.add(DRIVE_TO_POINT_FAST(0, 0, rev));
     // Pick up third disk
-    nlsa.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 0, TURN_SPEED));
-    nlsa.add(new DriveToPointCommand(drive_sys, drive_slow_mprofile, 0, 0, directionType::fwd), 3);
-    nlsa.add(new DriveToPointCommand(drive_sys, drive_fast_mprofile, 0, 0, directionType::rev));
+    nlsa.add(TURN_TO_HEADING(0));
+    nlsa.add(DRIVE_TO_POINT_SLOW(0, 0, fwd), 3);
+    nlsa.add(DRIVE_TO_POINT_FAST(0, 0, rev));
 
     // Turn around to shoot
-    nlsa.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 0, TURN_SPEED));
-    nlsa.add(new DriveToPointCommand(drive_sys, drive_slow_mprofile, 0, 0, directionType::fwd));
-    nlsa.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 0, TURN_SPEED));
+    nlsa.add(TURN_TO_HEADING(0));
+    nlsa.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
+    nlsa.add(new StopIntakeCommand(intake));
+    nlsa.add(TURN_TO_HEADING(0));
     
     
     // Shoot 1-3
@@ -157,18 +157,48 @@ CommandController prog_skills_non_loader_side(){
 
     CommandController nlss;
 
-    position_t start_pos = {.x = 128, .y = 84, .rot = 90}; // [measure]
+    position_t start_pos = {.x = 0, .y = 0, .rot = 90};
     nlss.add(new OdomSetPosition(odometry_sys, start_pos));
 
-    // Arrow 1 -------------------
-    nlss.add(new DriveToPointCommand(drive_sys, drive_fast_mprofile, 128, 96, fwd, 1)); // [measure]
-    nlss.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 0, 1)); // [measure]
+    // Shoot 1
+    add_single_shot_cmd(nlss, 3);
+    add_single_shot_cmd(nlss, 3);
+    nlss.add(TURN_TO_HEADING(90));
+
+    // Roller 1 
+    nlss.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
+    nlss.add(TURN_TO_HEADING(0));
+    nlss.add(DRIVE_FORWARD_FAST(0, fwd));
+    // nlss.add(new SpinRollerCommandAUTO(drive_sys, roller)); 
+    nlss.add(DRIVE_FORWARD_FAST(0, rev));
+     nlss.add(TURN_TO_HEADING(0));
+
+    // Intake Disk 1
+    nlss.add(new StartIntakeCommand(intake, INTAKE_VOLT));
+    nlss.add(DRIVE_TO_POINT_SLOW(0, 0, fwd));
+    nlss.add(TURN_TO_HEADING(0));
+
+    // Roller 2
+    nlss.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
+    nlss.add(TURN_TO_HEADING(0));
+    nlss.add(new StopIntakeCommand(intake));
+    nlss.add(DRIVE_FORWARD_FAST(0, fwd));
+    nlss.add(new SpinRollerCommandAUTO(drive_sys, roller));
+    nlss.add(DRIVE_FORWARD_FAST(0, rev));
+    nlss.add(TURN_TO_HEADING(0));
+
+    // Intake Disk 2
+    nlss.add(new StartIntakeCommand(intake, INTAKE_VOLT));
+    nlss.add(DRIVE_TO_POINT_SLOW(0, 0, fwd));
+    nlss.add(TURN_DEGREES(0));
+    
+    // Intake Disk 3
+    nlss.add(DRIVE_TO_POINT_SLOW(0, 0, fwd));
+    nlss.add(TURN_TO_HEADING(0));
+
+    // Shoot
 
 
-    // Arrow 2 -------------------
-    nlss.add(new DriveForwardCommand(drive_sys, drive_fast_mprofile, 2, fwd, 1)); // [measure]
-    nlss.add(new SpinRollerCommandAUTO(drive_sys, roller)); 
-    nlss.add(new DriveForwardCommand(drive_sys, drive_fast_mprofile, 2, reverse, 1)); // [measure]
 
 
   return nlss;
