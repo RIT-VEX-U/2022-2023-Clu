@@ -139,7 +139,10 @@ PID::pid_config_t vis_pid_cfg = {
 #define NOT_DETECTED_TIME 2
 #define MAX_SPEED 0.5
 
-VisionAimCommand::VisionAimCommand(vision &cam, vision::signature &sig, TankDrive &drive_sys): cam(cam), sig(sig), drive_sys(drive_sys), pid(vis_pid_cfg){}
+VisionAimCommand::VisionAimCommand(vision &cam, initializer_list<vision::signature> sigs, TankDrive &drive_sys): cam(cam), sig_vec(sigs), drive_sys(drive_sys), pid(vis_pid_cfg) 
+{}
+VisionAimCommand::VisionAimCommand(vision &cam, vision::signature sig, TankDrive &drive_sys): cam(cam), sig_vec({sig}), drive_sys(drive_sys), pid(vis_pid_cfg)
+{}
 
 /**
  * Run the VisionAimCommand
@@ -152,14 +155,36 @@ bool VisionAimCommand::run()
   if(!cam.installed())
     return true;
   
-  cam.takeSnapshot(sig, 1);
+  // cam.takeSnapshot(sig, 1);
   if(cam.objectCount > 0)
   {
+    // Take a snapshot with each color selected, 
+    // and store the largest found object for each in a vector
+    vector<vision::object> found;
+    for(vision::signature s : sig_vec)
+    {
+      cam.takeSnapshot(s, 1);
+      for(int i=0; i<cam.objects.getLength(); i++)
+        found.push_back(cam.objects[i]);
+    }
+
+    // Make sure we have something
+    if(found.size() < 1)
+      return false;
+
+    // Find the largest object in the "found" list
+    vision::object &largest = found[0];
+    for(int i=1; i<found.size(); i++)
+    {
+      if((found[i].width * found[i].height) > (largest.width * largest.height))
+        largest = found[i];
+    }
+
+    // Update the PID loop & drive the robot
     pid.set_target(VISION_CENTER);
     pid.set_limits(-MAX_SPEED, MAX_SPEED);
+    double out = pid.update(largest.centerX);
 
-    vision::object obj = cam.largestObject;
-    double out = pid.update(obj.centerX);
     drive_sys.drive_tank(out, -out);
 
     if(pid.is_on_target())

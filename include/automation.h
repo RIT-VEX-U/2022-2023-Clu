@@ -2,6 +2,8 @@
 #include "../core/include/subsystems/tank_drive.h"
 #include "vex.h"
 #include "../core/include/utils/command_structure/auto_command.h"
+#include <vector>
+#include <initializer_list>
 
 /**
  * SpinRollerCommand is an ACS command that tells the robot spin the roller to the team color
@@ -134,14 +136,15 @@ class VisionAimCommand : public AutoCommand
   /**
    * Contstruct a new VisionAimCommmand
   */
-    VisionAimCommand(vision &cam, vision::signature &sig, TankDrive &drive_sys);
+    VisionAimCommand(vision &cam, initializer_list<vision::signature> sigs, TankDrive &drive_sys);
+    VisionAimCommand(vision &cam, vision::signature sig, TankDrive &drive_sys);
 
     bool run() override;
 
   private:
 
   vision &cam;
-  vision::signature &sig;
+  vector<vision::signature> sig_vec;
   TankDrive &drive_sys;
   PID pid;
   timer tmr;

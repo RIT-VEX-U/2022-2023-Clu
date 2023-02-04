@@ -1,4 +1,5 @@
 #include "../include/competition/autonomous.h"
+#include "vision.h"
 
 #define TURN_SPEED 0.6
 
@@ -116,12 +117,13 @@ Map from page 40 of the game manual
  Align robot to specified place and angle using NON LOADER SIDE AUTO jig
 */
 CommandController auto_non_loader_side(){
-    int non_loader_side_shot_rpm = 3200;  // [measure]
     CommandController nlsa;
+
+    // Initialization
     position_t start_pos = {.x = 128, .y = 89, .rot = 90}; // [measure]
     nlsa.add(new OdomSetPosition(odometry_sys, start_pos));
+    nlsa.add(new SpinRPMCommand(flywheel_sys, 3500)); // [measure]
 
-    nlsa.add(new SpinRawCommand(flywheel, 12));
     // Arrow 1 -------------------
     nlsa.add(new DriveToPointCommand(drive_sys, drive_fast_mprofile, 127.9, 114, fwd, 1)); // [measure]
     nlsa.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 0, .6)); // [measure]
@@ -133,8 +135,9 @@ CommandController auto_non_loader_side(){
 
     // Spin and shoot
     nlsa.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 225, .6)); //[measure]
-    nlsa.add(new DriveToPointCommand(drive_sys, drive_fast_mprofile, 89, 76.5, directionType::fwd, 1)); //[ measure]
+    nlsa.add(new DriveToPointCommand(drive_sys, drive_fast_mprofile, 89, 76.5, directionType::fwd, 1)); // [measure]
     nlsa.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 145, 0.6)); // [measure]
+    nlsa.add(new VisionAimCommand(cam, {BLUE_GOAL, RED_GOAL}, drive_sys));
 
     nlsa.add(new WaitUntilUpToSpeedCommand(flywheel_sys, 10));
     nlsa.add(new ShootCommand(intake, 3, .25)); // [measure]
@@ -178,7 +181,6 @@ CommandController prog_skills_loader_side(){
     lss.add(new DriveForwardCommand(drive_sys, drive_slow_mprofile, 1, fwd)); //[measure]
     lss.add(new SpinRollerCommandAUTO(drive_sys, roller));
     lss.add(new DriveForwardCommand(drive_sys, drive_slow_mprofile, 4, reverse)); // [measure]
-    
     lss.add(new TurnToHeadingCommand(drive_sys, *config.turn_feedback, 180, TURN_SPEED)); //[measure]
     
     // Arrow 2 -------------------------
