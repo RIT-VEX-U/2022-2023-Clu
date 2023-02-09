@@ -6,7 +6,7 @@
 [subrepo]
 	remote = git@github.com:RIT-VEX-U/Core.git
 	branch = master
-	commit = 8c01c9756a8da5be9518ef80b7ee82297708963d
-	parent = 8a5b9242b58c5ad276e678ff09d8b0e73ede383b
+	commit = 18544869f8a972f019a9bb3b47581fef3b9cfd97
+	parent = 5b9d78ea27319ad55a382cff69ea2c06fc7fd438
 	method = merge
 	cmdver = 0.4.5

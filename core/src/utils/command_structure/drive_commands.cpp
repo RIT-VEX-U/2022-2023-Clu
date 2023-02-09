@@ -40,8 +40,13 @@ DriveForwardCommand::DriveForwardCommand(TankDrive &drive_sys, Feedback &feedbac
 bool DriveForwardCommand::run() {
   return drive_sys.drive_forward(inches, dir, feedback, max_speed);
 }
+
+/**
+ * reset the drive system if we timeout
+*/
 void DriveForwardCommand::on_timeout(){
   drive_sys.reset_auto();
+  drive_sys.stop();
 }
 
 
@@ -63,8 +68,12 @@ TurnDegreesCommand::TurnDegreesCommand(TankDrive &drive_sys, Feedback &feedback,
 bool TurnDegreesCommand::run() {
   return drive_sys.turn_degrees(degrees, max_speed);
 }
+/**
+ * reset the drive system if we timeout
+*/
 void TurnDegreesCommand::on_timeout(){
   drive_sys.reset_auto();
+  drive_sys.stop();
 }
 
 
@@ -81,18 +90,30 @@ DriveToPointCommand::DriveToPointCommand(TankDrive &drive_sys, Feedback &feedbac
   drive_sys(drive_sys), feedback(feedback), x(x), y(y), dir(dir), max_speed(max_speed) {}
 
 /**
+ * Construct a DriveForward Command
+ * @param drive_sys the drive system we are commanding
+ * @param feedback the feedback controller we are using to execute the drive
+ * @param y the point to drive to
+ * @param dir the direction to drive
+ * @param max_speed 0 -> 1 percentage of the drive systems speed to drive at
+ */
+DriveToPointCommand::DriveToPointCommand(TankDrive &drive_sys, Feedback &feedback, Vector2D::point_t point, directionType dir, double max_speed):
+  drive_sys(drive_sys), feedback(feedback), x(point.x), y(point.y), dir(dir), max_speed(max_speed) {}
+
+/**
  * Run drive_to_point
  * Overrides run from AutoCommand
  * @returns true when execution is complete, false otherwise
  */
 bool DriveToPointCommand::run() {
-  return drive_sys.drive_to_point(x, y, dir, max_speed);
+  return drive_sys.drive_to_point(x, y, dir, feedback, max_speed);
 }
 /**
  * reset the drive system if we don't hit our target
 */
 void DriveToPointCommand::on_timeout(){
   drive_sys.reset_auto();
+  drive_sys.stop();
 }
 
 
@@ -119,6 +140,7 @@ bool TurnToHeadingCommand::run() {
 */
 void TurnToHeadingCommand::on_timeout(){
   drive_sys.reset_auto();
+  drive_sys.stop();
 }
 
 
