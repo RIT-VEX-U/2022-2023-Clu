@@ -1,14 +1,46 @@
-#include "../include/automation.h"
+#include "automation.h"
+
+#include "vex.h"
 #include "robot-config.h"
+#include "core.h"
 #include "vision.h"
 
+// Pushes the firing flap to the up position for close in shots
+void FlapUp(){
+  flapup_solenoid.set(true);
+  flapdown_solenoid.set(false);
+}
+
+// Pushes the firing flap to the down position for far away shots
+void FlapDown(){
+  flapup_solenoid.set(false);
+  flapdown_solenoid.set(true);
+}
+/**
+ * Construct a FlapUpCommand
+ * when run it flaps the flap up
+*/
+FlapUpCommand::FlapUpCommand(){}
+bool FlapUpCommand::run(){
+  FlapUp();
+  return true;
+}
+/**
+ * Construct a FlapDownCommand
+ * when run it flaps the flap down
+*/
+FlapDownCommand::FlapDownCommand(){}
+bool FlapDownCommand::run(){
+  FlapDown();
+  return true;
+}
 
 /**
 * Construct a SpinRollerCommand
 * @param drive_sys the drive train that will allow us to apply pressure on the rollers
 * @param roller_motor The motor that will spin the roller
 */
-SpinRollerCommandAUTO::SpinRollerCommandAUTO(TankDrive &drive_sys, vex::motor &roller_motor): roller_motor(roller_motor), drive_sys(drive_sys){};
+SpinRollerCommandAUTO::SpinRollerCommandAUTO(TankDrive &drive_sys, vex::motor &roller_motor): drive_sys(drive_sys), roller_motor(roller_motor){};
 
 /**
  * Run roller controller to spin the roller to our color
@@ -128,23 +160,71 @@ bool EndgameCommand::run(){
   solenoid.set(true);
   return true;
 }
+PrintOdomCommand::PrintOdomCommand(OdometryTank &odom): odom(odom){}
 
-// ========= VISION AIMING =========
+bool PrintOdomCommand::run(){
+  position_t pos = odom.get_position();
+  printf("%.2f, %.2f, %.2f\n", pos.x, pos.y, pos.rot);
+  return true;
+}
+
+PrintOdomContinousCommand::PrintOdomContinousCommand(OdometryTank &odom): odom(odom){}
+bool PrintOdomContinousCommand::run(){
+  position_t pos = odom.get_position();
+  printf("(%.2f, %.2f), %.2f\n", pos.x, pos.y, pos.rot);
+  return false;
+}
+/**
+* Construct a StartIntakeCommand
+* @param colorSensor The color sensor being used
+* @param color The hue value of the color being detected
+* @param rollerMotor The rollor motor to spin the roller
+* @param error Error for color detection color+-error
+*/
+SpinToColorCommand::SpinToColorCommand(vex::optical &colorSensor, double color, vex::motor &rollerMotor, double error):colorSensor(colorSensor), color(color), rollerMotor(rollerMotor), error(error){}
+  
+  /**
+ * Run the StopIntakeCommand
+ * Overrides run from AutoCommand
+ * @returns true when execution is complete, false otherwise
+ */
+  bool SpinToColorCommand::run(){
+    //To deal with wrap around
+    if(color<=error){
+      if(colorSensor.hue()>color+15 && colorSensor.hue() < wrap_angle_deg(color-error)){
+        return false;
+      }
+    }
+    //no wrap around
+    else if(colorSensor.hue() < wrap_angle_deg(color-error) || colorSensor.hue() > wrap_angle_deg(color+error)){
+      rollerMotor.spin(vex::directionType::fwd);
+      return false;
+    }
+
+    rollerMotor.stop();
+
+    return true;
+  }
+
+
 
 PID::pid_config_t vis_pid_cfg = {
-  .p = 0,
+  .p = .003,
   .d = 0,
-  .deadband = 0,
-  .on_target_time = 0
+  .deadband = 5,
+  .on_target_time = .2
 };
 
-#define VISION_CENTER 0
-#define NOT_DETECTED_TIME 2
+FeedForward::ff_config_t vis_ff_cfg = {
+  .kS = 0.14
+};
+
+#define VISION_CENTER 140
+#define MIN_AREA 500
 #define MAX_SPEED 0.5
 
-VisionAimCommand::VisionAimCommand(vision &cam, std::initializer_list<vision::signature> sigs, TankDrive &drive_sys): cam(cam), sig_vec(sigs), drive_sys(drive_sys), pid(vis_pid_cfg) 
-{}
-VisionAimCommand::VisionAimCommand(vision &cam, vision::signature sig, TankDrive &drive_sys): cam(cam), sig_vec({sig}), drive_sys(drive_sys), pid(vis_pid_cfg)
+VisionAimCommand::VisionAimCommand()
+: pidff(vis_pid_cfg, vis_ff_cfg) 
 {}
 
 /**
@@ -158,45 +238,77 @@ bool VisionAimCommand::run()
   if(!cam.installed())
     return true;
   
-  // cam.takeSnapshot(sig, 1);
-  if(cam.objectCount > 0)
+  // Take a snapshot with each color selected, 
+  // and store the largest found object for each in a vector
+  vision::object red_obj, blue_obj;
+
+  // Get largest red blob
+  cam.takeSnapshot(RED_GOAL);
+  int red_count = cam.objectCount;
+  if(red_count > 0)
+    red_obj = cam.largestObject;
+  
+  // Get largest blue blob
+  cam.takeSnapshot(BLUE_GOAL);
+  int blue_count = cam.objectCount;
+  if(blue_count > 0)
+    blue_obj = cam.largestObject;
+
+  // Compare the areas of the largest
+  double red_area = red_obj.width * red_obj.height;
+  double blue_area = blue_obj.width * blue_obj.height;
+  int x_val = 0;
+
+  if(red_area > blue_area && red_area > MIN_AREA)
+    x_val = red_obj.centerX;
+  else if(blue_area > red_area && blue_area > MIN_AREA)
+    x_val = blue_obj.centerX;
+
+  // printf("CenterX: %d\n", x_val);
+
+  if(x_val != 0)
   {
-    // Take a snapshot with each color selected, 
-    // and store the largest found object for each in a vector
-    vector<vision::object> found;
-    for(vision::signature s : sig_vec)
-    {
-      cam.takeSnapshot(s, 1);
-      for(int i=0; i<cam.objects.getLength(); i++)
-        found.push_back(cam.objects[i]);
-    }
-
-    // Make sure we have something
-    if(found.size() < 1)
-      return false;
-
-    // Find the largest object in the "found" list
-    vision::object &largest = found[0];
-    for(int i=1; i<found.size(); i++)
-    {
-      if((found[i].width * found[i].height) > (largest.width * largest.height))
-        largest = found[i];
-    }
 
     // Update the PID loop & drive the robot
-    pid.set_target(VISION_CENTER);
-    pid.set_limits(-MAX_SPEED, MAX_SPEED);
-    double out = pid.update(largest.centerX);
+    pidff.set_target(VISION_CENTER);
+    pidff.set_limits(-MAX_SPEED, MAX_SPEED);
+    double out = pidff.update(x_val);
 
+    //Currently set up for upside-down camera. Flip signs if going backwards.
     drive_sys.drive_tank(out, -out);
 
-    if(pid.is_on_target())
+    if(pidff.is_on_target())
       return true;
-
-  } else
+  }
+  else
   {
     drive_sys.stop();
+    printf("Nothing Found\n");
   }
 
   return false;
+}
+
+/**
+ * Constuct a TurnToPointCommand
+ * @param odom Refrence to the OdometryTank object
+ * @param drive_sys Reference to the TankDrive system
+ * @param point The point we want to turn towards
+*/
+TurnToPointCommand::TurnToPointCommand(TankDrive &drive_sys, OdometryTank &odom, Feedback &turn_feedback, Vector2D::point_t point): drive_sys(drive_sys), odom(odom), feedback(turn_feedback), point(point){}
+
+/**
+ * Run the TurnToPointCommand
+ * Overrides run from AutoCommand
+ * @returns true when execution is complete, false otherwise
+*/
+bool TurnToPointCommand::run(){
+  //get differences in x and y to calculate angle relative to x axis
+  double delta_x=point.x-odom.get_position().x;
+  double delta_y=point.y-odom.get_position().y;
+
+  //get the angle
+  double heading_deg = rad2deg(atan2(delta_y,delta_x));
+
+  return drive_sys.turn_to_heading(heading_deg, feedback);
 }

@@ -1,9 +1,11 @@
 #pragma once
-#include "../core/include/subsystems/tank_drive.h"
 #include "vex.h"
-#include "../core/include/utils/command_structure/auto_command.h"
+#include "core.h"
 #include <vector>
 #include <initializer_list>
+#include "../core/include/utils/command_structure/auto_command.h"
+#include "../core/include/subsystems/tank_drive.h"
+#include "../core/include/subsystems/odometry/odometry_tank.h"
 
 /**
  * SpinRollerCommand is an ACS command that tells the robot spin the roller to the team color
@@ -26,6 +28,32 @@ class SpinRollerCommandAUTO: public AutoCommand {
   
   private:
     vex::motor &roller_motor;
+    bool func_initialized;
+    double start_pos;
+    double target_pos;
+    TankDrive &drive_sys;
+};
+/**
+ * SpinRollerCommand is an ACS command that tells the robot spin the roller to the team color
+*/
+class SpinRollerCommandSKILLS: public AutoCommand {
+  public:
+    /**
+    * Construct a SpinRollerCommand
+    * @param drive_sys the drivetrain tha will let us apply pressure to spin the roller
+    * @param roller_motor The motor that will spin the roller
+    */
+    SpinRollerCommandSKILLS(TankDrive &drive_sys, vex::motor roller_motor);
+
+    /**
+     * Run roller controller to spin the roller to our color
+     * Overrides run from AutoCommand
+     * @returns true when execution is complete, false otherwise
+     */
+    bool run() override;
+  
+  private:
+    vex::motor roller_motor;
     bool func_initialized;
     double start_pos;
     double target_pos;
@@ -127,6 +155,48 @@ class EndgameCommand : public AutoCommand{
     vex::digital_out &solenoid;
 };
 
+
+class PrintOdomCommand : public AutoCommand{
+  public:
+    /**
+     * Construct a PrintOdomCommand
+    */
+   PrintOdomCommand(OdometryTank &odom);
+   bool run() override;
+  private:
+    OdometryTank &odom;
+};
+
+class PrintOdomContinousCommand : public AutoCommand{
+  public:
+    /**
+     * Construct a PrintOdomCommand
+    */
+   PrintOdomContinousCommand(OdometryTank &odom);
+   bool run() override;
+  private:
+    OdometryTank &odom;
+};
+
+/**
+ * ACS Command to spin roller to a certain color using a color sensor
+*/
+class SpinToColorCommand : public AutoCommand{
+  public:
+  /**
+   * Construct a new SpinToColorCommand
+  */
+    SpinToColorCommand(vex::optical &colorSensor, double color, vex::motor &rollerMotor, double error=15);
+
+    bool run() override;
+
+  private:
+    vex::optical &colorSensor;
+    double color;
+    vex::motor &rollerMotor;
+    double error;
+};
+
 /**
  * ACS Command for targetting the high goal with vision using PID
 */
@@ -136,16 +206,48 @@ class VisionAimCommand : public AutoCommand
   /**
    * Contstruct a new VisionAimCommmand
   */
-    VisionAimCommand(vision &cam, std::initializer_list<vision::signature> sigs, TankDrive &drive_sys);
-    VisionAimCommand(vision &cam, vision::signature sig, TankDrive &drive_sys);
+    VisionAimCommand();
 
     bool run() override;
 
   private:
 
-    vision &cam;
-    std::vector<vision::signature> sig_vec;
-    TankDrive &drive_sys;
-    PID pid;
+    PIDFF pidff;
     timer tmr;
+};
+
+class FlapUpCommand : public AutoCommand
+{
+  public:
+   FlapUpCommand();
+   
+   bool run();
+};
+
+class FlapDownCommand : public AutoCommand
+{
+  public:
+   FlapDownCommand();
+   
+   bool run();
+};
+
+/**
+ * ACS Command for turning twoards a specified point
+*/
+class TurnToPointCommand : public AutoCommand
+{
+  public:
+  /**
+   * COnstruct the command
+  */
+    TurnToPointCommand(TankDrive &drive_sys, OdometryTank &odom, Feedback &feedback, Vector2D::point_t point);
+
+    bool run() override;
+  
+  private:
+    TankDrive &drive_sys;
+    OdometryTank &odom;
+    Feedback &feedback;
+    Vector2D::point_t point;
 };
