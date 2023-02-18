@@ -6,15 +6,13 @@
 // Pushes the firing flap to the up position for close in shots
 void FlapUp()
 {
-  flapup_solenoid.set(true);
-  flapdown_solenoid.set(false);
+  flapup_solenoid.set(false);
 }
 
 // Pushes the firing flap to the down position for far away shots
 void FlapDown()
 {
-  flapup_solenoid.set(false);
-  flapdown_solenoid.set(true);
+  flapup_solenoid.set(true);
 }
 /**
  * Construct a FlapUpCommand

@@ -18,7 +18,6 @@ extern digital_out endgame_solenoid;
 extern digital_out flapdown_solenoid;
 extern digital_out flapup_solenoid;
 
-extern vex::digital_out flapdown_solenoid;
 extern vex::digital_out flapup_solenoid;
 
 // ======== INPUTS ========

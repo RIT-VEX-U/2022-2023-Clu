@@ -1,4 +1,5 @@
 #include "../include/competition/autonomous.h"
+#include "competition/autonomous_clu.h"
 #include "../include/robot-config.h"
 #include "../core/include/utils/math_util.h"
 
@@ -19,7 +20,8 @@ void autonomous()
     while(imu.isCalibrating()){
       vexDelay(20);
     }
-    CommandController current_auto = prog_skills_loader_side();
+    // CommandController current_auto = prog_skills_loader_side();
+    CommandController current_auto = auto_non_loader_side();
     current_auto.run();
     while(true){
         drive_sys.stop();

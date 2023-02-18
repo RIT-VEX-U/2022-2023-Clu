@@ -23,9 +23,8 @@ motor roller(PORT4);
 motor_group flywheel_motors(flywheel);
 
 // Other Outputs
-digital_out endgame_solenoid(Brain.ThreeWirePort.H); //TODO make this an actual port
-digital_out flapdown_solenoid(Brain.ThreeWirePort.F);
-digital_out flapup_solenoid(Brain.ThreeWirePort.G);
+digital_out endgame_solenoid(Brain.ThreeWirePort.G); //TODO make this an actual port
+digital_out flapup_solenoid(Brain.ThreeWirePort.H);
 
 // ======== INPUTS ========
 CustomEncoder left_enc(Brain.ThreeWirePort.A, 2048);
@@ -74,13 +73,11 @@ PID::pid_config_t turn_pid_cfg = {
     .on_target_time = .2
 };
 
-
-
-// FeedForward::ff_config_t turn_ff_cfg = {
-//     .kS = 0.11,
-//     .kV = 0.001,
-//     .kA = .00017
-// };
+FeedForward::ff_config_t turn_ff_cfg = {
+    .kS = 0.11,
+    .kV = 0.001,
+    .kA = .00017
+};
 
 // MotionController::m_profile_cfg_t turn_fast_mprofile_cfg = {
 //     .max_v = 600, //700,
@@ -108,7 +105,7 @@ robot_specs_t config = {
     .drive_correction_cutoff = 4,
 
     .drive_feedback = &drive_fast_mprofile,
-    .turn_feedback = new PID(turn_pid_cfg),
+    .turn_feedback = new PIDFF(turn_pid_cfg, turn_ff_cfg),
     .correction_pid = {
         .p = .012,
         .i = 0,
@@ -123,7 +120,7 @@ FeedForward::ff_config_t flywheel_ff_cfg = {
 
 PID::pid_config_t flywheel_pid_cfg = {
     .p = .003,
-    .d = 0.000015,
+    // .d = 0.000015,
 };
 
 // ======== SUBSYSTEMS ========

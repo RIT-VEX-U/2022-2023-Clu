@@ -8,10 +8,10 @@
 #define SHOOTING_RPM 3500
 #define THRESHOLD_RPM 150
 #define SINGLE_SHOT_TIME 0.2
-#define SINGLE_SHOT_VOLT 12
+#define SINGLE_SHOT_VOLT 6
 #define SINGLE_SHOT_RECOVER_DELAY_MS 200
 #define TRI_SHOT_TIME 1
-#define TRI_SHOT_VOLT 12
+#define TRI_SHOT_VOLT 9
 #define TRI_SHOT_RECOVER_DELAY_MS 200
 
 // drive commands
@@ -33,7 +33,7 @@
 static void add_single_shot_cmd(CommandController &controller, double timeout=0.0)
 {
     controller.add(WAIT_FOR_FLYWHEEL, timeout);
-    controller.add(AUTO_AIM, timeout);
+    // controller.add(AUTO_AIM, timeout);
     controller.add(SHOOT_DISK);
     controller.add_delay(SINGLE_SHOT_RECOVER_DELAY_MS);
 }
@@ -185,87 +185,90 @@ CommandController prog_skills_non_loader_side(){
 
     CommandController nlss;
 
-    position_t start_pos = {.x = 0, .y = 0, .rot = 90};
+    position_t start_pos = {.x = 132, .y = 56, .rot = 270};
     nlss.add(new OdomSetPosition(odometry_sys, start_pos));
-
+    nlss.add(new SpinRPMCommand(flywheel_sys, 4000), 1);
+    
     // Shoot 1 (2 disks)
     nlss.add(new FlapUpCommand());
-    nlss.add(DRIVE_FORWARD_SLOW(0, fwd));
-    nlss.add(TURN_TO_HEADING(0));
+    nlss.add(DRIVE_TO_POINT_SLOW(132, 46, fwd));
+    nlss.add(TURN_TO_HEADING(256));
     add_tri_shot_cmd(nlss, 3);
 
     // Roller 1 
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, rev));
+    nlss.add(TURN_TO_HEADING(270));
+    nlss.add(DRIVE_TO_POINT_FAST(129, 108, rev));
     nlss.add(TURN_TO_HEADING(0));
+
     // Drive forward and back to roll
-    nlss.add(DRIVE_FORWARD_FAST(0, fwd));
-    nlss.add(DRIVE_FORWARD_FAST(0, rev));
+    nlss.add(DRIVE_FORWARD_FAST(6, fwd));
+    nlss.add(DRIVE_FORWARD_FAST(6, rev));
     // One more time
-    nlss.add(DRIVE_FORWARD_FAST(0, fwd));
-    nlss.add(DRIVE_FORWARD_FAST(0, rev));
-    nlss.add(TURN_TO_HEADING(0));
+    nlss.add(DRIVE_FORWARD_FAST(6, fwd));
+    nlss.add(DRIVE_FORWARD_FAST(9, rev));
+    nlss.add(TURN_TO_HEADING(90));
+    
 
     // Intake Disk 1
     nlss.add(new StartIntakeCommand(intake, INTAKE_VOLT));
-    nlss.add(DRIVE_TO_POINT_SLOW(0, 0, fwd));
-    nlss.add(TURN_TO_HEADING(0));
+    nlss.add(DRIVE_TO_POINT_SLOW(130, 134, fwd));
+    nlss.add(DRIVE_TO_POINT_FAST(127,112,rev));
+    nlss.add(TURN_TO_HEADING(128));
+    nlss.add(DRIVE_TO_POINT_SLOW(115,127,fwd));
+    nlss.add(TURN_TO_HEADING(80));    
+    nlss.add(new StopIntakeCommand(intake));
+
 
     // Roller 2
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
-    nlss.add(TURN_TO_HEADING(0));
-    nlss.add(new StopIntakeCommand(intake));
-    // Drive forward and back to roll
-    nlss.add(DRIVE_FORWARD_FAST(0, fwd));
-    nlss.add(DRIVE_FORWARD_FAST(0, rev));
-    // One more time
-    nlss.add(DRIVE_FORWARD_FAST(0, fwd));
-    nlss.add(DRIVE_FORWARD_FAST(0, rev));
-    nlss.add(TURN_TO_HEADING(0));
-
-    // Intake Disk 2
-    nlss.add(new StartIntakeCommand(intake, INTAKE_VOLT));
-    nlss.add(DRIVE_TO_POINT_SLOW(0, 0, fwd));
-    nlss.add(TURN_DEGREES(0));
+    nlss.add(DRIVE_TO_POINT_FAST(118, 139, fwd), 4);
+    nlss.add(DRIVE_FORWARD_FAST(6, rev));
+    nlss.add(DRIVE_FORWARD_FAST(6, fwd));
+    nlss.add(DRIVE_FORWARD_FAST(9, rev));    
     
     // Intake Disk 3
-    nlss.add(DRIVE_TO_POINT_SLOW(0, 0, fwd));
-    nlss.add(TURN_TO_HEADING(0));
-
-    // Shoot 2 (3 disks)
+    // nlss.add(TURN_TO_HEADING(230));
+    // nlss.add(new StartIntakeCommand(intake, INTAKE_VOLT));
+    // nlss.add(DRIVE_TO_POINT_SLOW(105, 115, fwd));
+    // nlss.add(DRIVE_FORWARD_FAST(2, rev));
+    // nlss.add(TURN_DEGREES(265));
+    
+    // Shoot 2 (2 disks)
     nlss.add(new FlapDownCommand());
     nlss.add(new StopIntakeCommand(intake));
+    nlss.add(TURN_TO_HEADING(270));
+    nlss.add(DRIVE_TO_POINT_FAST(119, 100, fwd));
+    nlss.add(TURN_TO_HEADING(268));
+    
     add_single_shot_cmd(nlss, 3);
     add_single_shot_cmd(nlss, 3);
-    add_single_shot_cmd(nlss, 3);
-
+    
+    
+    nlss.add(new StartIntakeCommand(intake, INTAKE_VOLT));
     // Drive to Intake 2
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
+    nlss.add(DRIVE_TO_POINT_SLOW(110, 60, fwd));
+    nlss.add(DRIVE_TO_POINT_SLOW(107, 71, rev));
 
     // Intake 2 disk 1
-    nlss.add(new StartIntakeCommand(intake, INTAKE_VOLT));
-    nlss.add(DRIVE_TO_POINT_SLOW(0, 0, fwd));
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, rev));
+    nlss.add(DRIVE_TO_POINT_SLOW(104, 59, fwd));
+    nlss.add(DRIVE_TO_POINT_SLOW(105, 67, rev));
 
     // Intake 2 disk 2
-    nlss.add(DRIVE_TO_POINT_SLOW(0, 0, fwd));
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, rev));
+    // nlss.add(DRIVE_TO_POINT_SLOW(94, 61, fwd));
+    nlss.add(DRIVE_TO_POINT_SLOW(124, 61, rev));
+    nlss.add(new StopIntakeCommand(intake));
 
-    // Intake 2 disk 3
-    nlss.add(DRIVE_TO_POINT_SLOW(0, 0, fwd));
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, rev));
 
     // Drive to Shooting Pos
-    nlss.add(TURN_TO_HEADING(0));
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
-    nlss.add(TURN_TO_HEADING(0));
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
+    nlss.add(TURN_TO_HEADING(270));
+    nlss.add(DRIVE_TO_POINT_FAST(124, 47, fwd));
+    nlss.add(TURN_TO_HEADING(250));
     nlss.add(new StopIntakeCommand(intake));
     
     // Shoot 3 (3 disks)
     nlss.add(new FlapUpCommand());
-    nlss.add(TURN_TO_HEADING(0));
+    nlss.add(TURN_TO_HEADING(250));
     add_tri_shot_cmd(nlss, 3);
+    return nlss;
 
     // quick 'n dirty wall align
     nlss.add(TURN_TO_HEADING(0));
