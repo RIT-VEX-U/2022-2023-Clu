@@ -18,16 +18,21 @@ extern digital_out endgame_solenoid;
 extern digital_out flapdown_solenoid;
 extern digital_out flapup_solenoid;
 
+extern vex::digital_out flapdown_solenoid;
+extern vex::digital_out flapup_solenoid;
+
 // ======== INPUTS ========
 extern CustomEncoder left_enc, right_enc, mid_enc;
 extern inertial imu;
+
+extern vex::optical colorSensor;
 
 // ======== UTILS ========
 // Drive Tuning
 
 
 extern PID::pid_config_t drive_pid_cfg, turn_pid_cfg;
-extern FeedForward::ff_config_t drive_ff_cfg;//, turn_ff_cfg;
+extern FeedForward::ff_config_t drive_ff_cfg, turn_ff_cfg;
 extern MotionController::m_profile_cfg_t drive_fast_mprofile_cfg, drive_slow_mprofile_cfg;
 // extern MotionController::m_profile_cfg_t turn_fast_mprofile_cfg, turn_slow_mprofile_cfg;
 

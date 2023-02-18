@@ -22,7 +22,7 @@
 
 using namespace vex;
 
-const int FlywheelWindowSize = 30;
+const int FlywheelWindowSize = 1;
 
 /*********************************************************
 *         CONSTRUCTOR, GETTERS, SETTERS
@@ -81,7 +81,7 @@ double Flywheel::measureRPM() {
   double rawRPM = ratio * motors.velocity(velocityUnits::rpm); 
   RPM_avger.add_entry(rawRPM);
   smoothedRPM = RPM_avger.get_average();
-  return smoothedRPM;
+  return smoothedRPM; //TODO Change back
 }
 
 double Flywheel::getRPM(){
@@ -291,6 +291,8 @@ void Flywheel::spinRPM(int inputRPM) {
 void Flywheel::stop() {
   rpmTask.stop();
   taskRunning = false;
+  RPM = 0.0;
+  smoothedRPM = 0.0;
   motors.stop();
 }
 
