@@ -4,13 +4,13 @@
 #include "vision.h"
 
 // Pushes the firing flap to the up position for close in shots
-void FlapUp()
+void flap_up()
 {
   flapup_solenoid.set(false);
 }
 
 // Pushes the firing flap to the down position for far away shots
-void FlapDown()
+void flap_down()
 {
   flapup_solenoid.set(true);
 }
@@ -21,7 +21,7 @@ void FlapDown()
 FlapUpCommand::FlapUpCommand() {}
 bool FlapUpCommand::run()
 {
-  FlapUp();
+  flap_up();
   return true;
 }
 /**
@@ -31,7 +31,7 @@ bool FlapUpCommand::run()
 FlapDownCommand::FlapDownCommand() {}
 bool FlapDownCommand::run()
 {
-  FlapDown();
+  flap_down();
   return true;
 }
 
@@ -223,15 +223,15 @@ bool SpinToColorCommand::run()
 }
 
 PID::pid_config_t vis_pid_cfg = {
-    .p = .001,
+    .p = .0008,
     // .d = .0001,
     .deadband = 5,
     .on_target_time = .2};
 
 FeedForward::ff_config_t vis_ff_cfg = {
-    .kS = 0.1};
+    .kS = 0.08};
 
-#define VISION_CENTER 140
+#define VISION_CENTER 155
 #define MIN_AREA 500
 #define MAX_SPEED 0.5
 #define FALLBACK_MAX_DEGREES 10
@@ -306,7 +306,7 @@ bool VisionAimCommand::run()
     double out = pidff.update(x_val);
 
     // Currently set up for upside-down camera. Flip signs if going backwards.
-    drive_sys.drive_tank(out, -out);
+    // drive_sys.drive_tank(out, -out);
 
     if (pidff.is_on_target())
     {

@@ -8,7 +8,7 @@ void tuning()
   while(imu.isCalibrating()){}
   // tune_odometry_wheel_diam();
   // tune_odometry_wheelbase();
-  tune_flywheel_ff();
+  // tune_flywheel_ff();
   // tune_drive_ff_ks(TURN);
   // tune_drive_ff_kv(TURN, 0.12);
   // tune_drive_motion_maxv(TURN);
@@ -27,6 +27,8 @@ void tuning()
 
   // if(main_controller.ButtonX.pressing())
   //   drive_sys.drive_tank(.11, -.11);
+
+  
 }
 
 void programmers_opcontrol()
@@ -34,11 +36,13 @@ void programmers_opcontrol()
   // while(true) {tuning(); vexDelay(20);}
   while(imu.isCalibrating()){}
 
-  prog_skills_non_loader_side().run();
+  auto_non_loader_side().run();
 
   flywheel_sys.stop();
   intake.stop();
   
+  // flywheel_sys.spinRPM(3800);
+  VisionAimCommand visaim(false);
   position_t pos;
   while(true)
   {
@@ -47,13 +51,45 @@ void programmers_opcontrol()
       // flywheel_sys.spin_raw(1, fwd);
     //   flywheel_sys.spinRPM(2500);
     // else if (main_controller.ButtonDown.pressing())
-    //   flywheel_sys.spinRPM(4000);
+    
     
     // printf("RPM: %2f\n", flywheel_sys.getRPM());
     pos = odometry_sys.get_position();
     printf("X: %2f, Y: %2f, R: %2f\n", pos.x, pos.y, pos.rot);
-    // drive_sys.drive_arcade(main_controller.Axis3.position() / 200.0, main_controller.Axis1.position() / 200.0);
+    
+    if(main_controller.ButtonA.pressing())
+      visaim.run();
+    else
+      drive_sys.drive_arcade(main_controller.Axis3.position() / 200.0, main_controller.Axis1.position() / 200.0);
+
+    if(main_controller.ButtonR2.pressing())
+      intake.spin(directionType::fwd, 12, volt);
+    else if(main_controller.ButtonR1.pressing())
+      intake.spin(directionType::rev, 12, volt);
+    else
+      intake.stop();
+
     vexDelay(20);
+  }
+}
+
+void print_to_screen()
+{
+  static timer tmr;
+
+  if(tmr.time() > 1)
+  {
+    Brain.Screen.clearScreen();
+    Brain.Screen.setCursor(0, 0);
+    Brain.Screen.print("Battery: %d%", Brain.Battery.capacity());
+    Brain.Screen.print("Flywheel Temp: %2f F", flywheel.temperature());
+    Brain.Screen.setCursor(1, 0);
+    if(flywheel.installed())
+      Brain.Screen.print("Flywheel Connected");
+    else
+      Brain.Screen.print("WARNING || FLYWHEEL DISCONNECTED!");
+    Brain.Screen.print("Flywheel RPM: %2f", flywheel_sys.getRPM());
+    tmr.reset();
   }
 }
 
@@ -107,6 +143,8 @@ void opcontrol()
   // Flywheel set RPM 
   flywheel_sys.spinRPM(4000);
   odometry_sys.end_async();
+  
+  flap_up();
   timer tmr;
 
   // int i = 0;
@@ -116,6 +154,7 @@ void opcontrol()
   // Periodic
   while(true)
   {
+    print_to_screen();
     // i++;
     // if (i % 5 == 0)
     // {

@@ -9,6 +9,10 @@
 #include "../core/include/subsystems/odometry/odometry_tank.h"
 #include <float.h>
 
+void flap_up();
+
+void flap_down();
+
 /**
  * SpinRollerCommand is an ACS command that tells the robot spin the roller to the team color
  */

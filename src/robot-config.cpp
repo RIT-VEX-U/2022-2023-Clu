@@ -23,8 +23,8 @@ motor roller(PORT4);
 motor_group flywheel_motors(flywheel);
 
 // Other Outputs
-digital_out endgame_solenoid(Brain.ThreeWirePort.G); //TODO make this an actual port
-digital_out flapup_solenoid(Brain.ThreeWirePort.H);
+digital_out endgame_solenoid(Brain.ThreeWirePort.H);
+digital_out flapup_solenoid(Brain.ThreeWirePort.G);
 
 // ======== INPUTS ========
 CustomEncoder left_enc(Brain.ThreeWirePort.A, 2048);
