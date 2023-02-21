@@ -306,7 +306,7 @@ bool VisionAimCommand::run()
     double out = pidff.update(x_val);
 
     // Currently set up for upside-down camera. Flip signs if going backwards.
-    // drive_sys.drive_tank(out, -out);
+    drive_sys.drive_tank(out, -out);
 
     if (pidff.is_on_target())
     {
