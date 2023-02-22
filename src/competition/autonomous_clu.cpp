@@ -239,117 +239,135 @@ CommandController prog_skills_non_loader_side(){
     add_single_shot_cmd(nlss, 3);
 
     // Drive to Intake 2
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
-
-    // Intake 2 disk 1
+    
+    //Intale 2 disk 1
     nlss.add(new StartIntakeCommand(intake, INTAKE_VOLT));
-    nlss.add(DRIVE_TO_POINT_SLOW(0, 0, fwd));
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, rev));
+    nlss.add(DRIVE_TO_POINT_SLOW(92, 56, fwd));
+    nlss.add(DRIVE_TO_POINT_SLOW(100, 71, rev));
 
     // Intake 2 disk 2
-    nlss.add(DRIVE_TO_POINT_SLOW(0, 0, fwd));
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, rev));
+    nlss.add(DRIVE_TO_POINT_SLOW(102, 59, fwd));
+    nlss.add(DRIVE_TO_POINT_SLOW(105, 67, rev));
 
     // Intake 2 disk 3
-    nlss.add(DRIVE_TO_POINT_SLOW(0, 0, fwd));
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, rev));
+    nlss.add(DRIVE_TO_POINT_SLOW(108, 60, fwd));
+    nlss.add(DRIVE_TO_POINT_SLOW(106, 71, rev));
+
+    nlss.add(new StopIntakeCommand(intake));
+
+
 
     // Drive to Shooting Pos
-    nlss.add(TURN_TO_HEADING(0));
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
-    nlss.add(TURN_TO_HEADING(0));
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
-    nlss.add(new StopIntakeCommand(intake));
+    nlss.add(DRIVE_TO_POINT_SLOW(124, 45, fwd));
+    nlss.add(TURN_TO_HEADING(268));
+    nlss.add(new FlapUpCommand());
+    nlss.add(AUTO_AIM, 2);
+    add_tri_shot_cmd(nlss, 1.5);
+    // nlss.add(DRIVE_TO_POINT_FAST(124, 24, fwd));
+
+    //Temp End!
+    // nlss.add(TURN_TO_HEADING(300));
+    // nlss.add(new StopIntakeCommand(intake));
+    // nlss.add(new FunctionCommand([](){
+    //     while(skills_tmr.time(sec) < 50)
+    //     {
+    //         vexDelay(20);
+    //         return false;
+    //     }
+    //     return true;
+    // }));
+    // nlss.add(new EndgameCommand(endgame_solenoid));
+    // return nlss;
+
     
     // Shoot 3 (3 disks)
-    nlss.add(new FlapUpCommand());
-    nlss.add(TURN_TO_HEADING(0));
-    add_tri_shot_cmd(nlss, 3);
+    // nlss.add(new FlapUpCommand());
+    // nlss.add(TURN_TO_HEADING(300));
+    // add_tri_shot_cmd(nlss, 3);
 
-    // quick 'n dirty wall align
-    nlss.add(TURN_TO_HEADING(0));
-    nlss.add(DRIVE_TO_POINT_SLOW(0, 0, rev));
-    // === INSERT WALL ALIGN FUNCTION
-    nlss.add(DRIVE_FORWARD_FAST(0, fwd));
+    // // quick 'n dirty wall align
+    // nlss.add(TURN_TO_HEADING(0));
+    // nlss.add(DRIVE_TO_POINT_SLOW(0, 0, rev));
+    // // === INSERT WALL ALIGN FUNCTION
+    // nlss.add(DRIVE_FORWARD_FAST(0, fwd));
     
-    // Drive to Intake 3
-    nlss.add(TURN_TO_HEADING(0));
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
-    nlss.add(TURN_TO_HEADING(0));
+    // // Drive to Intake 3
+    // nlss.add(TURN_TO_HEADING(0));
+    // nlss.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
+    // nlss.add(TURN_TO_HEADING(0));
 
-    // Intake 3 disk 1-3
-    nlss.add(DRIVE_TO_POINT_SLOW(0, 0, fwd));
+    // // Intake 3 disk 1-3
+    // nlss.add(DRIVE_TO_POINT_SLOW(0, 0, fwd));
 
-    // Drive to Shoot 4
-    nlss.add(TURN_TO_HEADING(0));
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
-    nlss.add(TURN_TO_HEADING(0));
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
-    nlss.add(new StopIntakeCommand(intake));
+    // // Drive to Shoot 4
+    // nlss.add(TURN_TO_HEADING(0));
+    // nlss.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
+    // nlss.add(TURN_TO_HEADING(0));
+    // nlss.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
+    // nlss.add(new StopIntakeCommand(intake));
 
-    // Shoot 4
-    nlss.add(TURN_TO_HEADING(0));
-    add_tri_shot_cmd(nlss, 3);
+    // // Shoot 4
+    // nlss.add(TURN_TO_HEADING(0));
+    // add_tri_shot_cmd(nlss, 3);
 
-    // Cheeky lil' wall align
-    nlss.add(TURN_TO_HEADING(0));
-    nlss.add(DRIVE_TO_POINT_SLOW(0, 0, rev));
-    // === INSERT WALL ALIGN FUNCTION
-    nlss.add(DRIVE_FORWARD_FAST(0, fwd));
+    // // Cheeky lil' wall align
+    // nlss.add(TURN_TO_HEADING(0));
+    // nlss.add(DRIVE_TO_POINT_SLOW(0, 0, rev));
+    // // === INSERT WALL ALIGN FUNCTION
+    // nlss.add(DRIVE_FORWARD_FAST(0, fwd));
 
-    // Drive to Intake 4
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
-    nlss.add(TURN_TO_HEADING(0));
+    // // Drive to Intake 4
+    // nlss.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
+    // nlss.add(TURN_TO_HEADING(0));
 
-    // Intake 4 disk 1
-    nlss.add(new StartIntakeCommand(intake, INTAKE_VOLT));
-    nlss.add(DRIVE_TO_POINT_SLOW(0, 0, fwd));
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, rev));
+    // // Intake 4 disk 1
+    // nlss.add(new StartIntakeCommand(intake, INTAKE_VOLT));
+    // nlss.add(DRIVE_TO_POINT_SLOW(0, 0, fwd));
+    // nlss.add(DRIVE_TO_POINT_FAST(0, 0, rev));
 
-    // Intake 4 disk 2
-    nlss.add(DRIVE_TO_POINT_SLOW(0, 0, fwd));
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, rev));
+    // // Intake 4 disk 2
+    // nlss.add(DRIVE_TO_POINT_SLOW(0, 0, fwd));
+    // nlss.add(DRIVE_TO_POINT_FAST(0, 0, rev));
 
-    // Intake 4 disk 3
-    nlss.add(DRIVE_TO_POINT_SLOW(0, 0, fwd));
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, rev));
+    // // Intake 4 disk 3
+    // nlss.add(DRIVE_TO_POINT_SLOW(0, 0, fwd));
+    // nlss.add(DRIVE_TO_POINT_FAST(0, 0, rev));
 
-    // Drive to Shoot 5
-    nlss.add(TURN_TO_HEADING(0));
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
-    nlss.add(TURN_TO_HEADING(0));
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
-    nlss.add(new StopIntakeCommand(intake));
+    // // Drive to Shoot 5
+    // nlss.add(TURN_TO_HEADING(0));
+    // nlss.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
+    // nlss.add(TURN_TO_HEADING(0));
+    // nlss.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
+    // nlss.add(new StopIntakeCommand(intake));
 
-    // Shoot 5
-    nlss.add(TURN_TO_HEADING(0));
-    add_tri_shot_cmd(nlss, 3);
+    // // Shoot 5
+    // nlss.add(TURN_TO_HEADING(0));
+    // add_tri_shot_cmd(nlss, 3);
 
-    // A wall align for the road
-    nlss.add(TURN_TO_HEADING(0));
-    nlss.add(DRIVE_TO_POINT_SLOW(0, 0, rev));
-    // === INSERT WALL ALIGN FUNCTION
-    nlss.add(DRIVE_FORWARD_FAST(0, fwd));
+    // // A wall align for the road
+    // nlss.add(TURN_TO_HEADING(0));
+    // nlss.add(DRIVE_TO_POINT_SLOW(0, 0, rev));
+    // // === INSERT WALL ALIGN FUNCTION
+    // nlss.add(DRIVE_FORWARD_FAST(0, fwd));
 
-    // Drive to Intake 5
-    nlss.add(TURN_TO_HEADING(0));
-    nlss.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
+    // // Drive to Intake 5
+    // nlss.add(TURN_TO_HEADING(0));
+    // nlss.add(DRIVE_TO_POINT_FAST(0, 0, fwd));
 
-    // Intake 5
-    nlss.add(new StartIntakeCommand(intake, INTAKE_VOLT));
-    nlss.add(DRIVE_TO_POINT_SLOW(0, 0, fwd));
+    // // Intake 5
+    // nlss.add(new StartIntakeCommand(intake, INTAKE_VOLT));
+    // nlss.add(DRIVE_TO_POINT_SLOW(0, 0, fwd));
     
-    // Shoot 5
-    nlss.add(new FlapDownCommand());
-    nlss.add(TURN_TO_HEADING(0));
-    nlss.add(new StopIntakeCommand(intake));
-    add_single_shot_cmd(nlss, 3);
+    // // Shoot 5
+    // nlss.add(new FlapDownCommand());
+    // nlss.add(TURN_TO_HEADING(0));
+    // nlss.add(new StopIntakeCommand(intake));
+    // add_single_shot_cmd(nlss, 3);
 
-    // Endgame
-    nlss.add(TURN_TO_HEADING(0));
-    nlss.add(new DriveStopCommand(drive_sys));
-    nlss.add(new EndgameCommand(endgame_solenoid));
+    // // Endgame
+    // nlss.add(TURN_TO_HEADING(0));
+    // nlss.add(new DriveStopCommand(drive_sys));
+    // //nlss.add(new EndgameCommand(endgame_solenoid));
 
   return nlss;
 }

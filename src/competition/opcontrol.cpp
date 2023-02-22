@@ -22,7 +22,7 @@ int print_odom(){
 void opcontrol()
 {
   StartScreen(Brain.Screen, {page_one, page_two});
-  test_stuff();
+  testing();
   //testing();
   //draw_image();
   //Brain.Screen.drawImageFromBuffer(&intense_milk[0], 0, 0, intense_milk_width , intense_milk_height);
