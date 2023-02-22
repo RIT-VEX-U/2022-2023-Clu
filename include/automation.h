@@ -1,13 +1,9 @@
 #pragma once
+#include <functional>
+#include <cfloat>
 #include "vex.h"
 #include "core.h"
-#include <vector>
-#include <functional>
-#include <initializer_list>
-#include "../core/include/utils/command_structure/auto_command.h"
-#include "../core/include/subsystems/tank_drive.h"
-#include "../core/include/subsystems/odometry/odometry_tank.h"
-#include <float.h>
+
 
 void flap_up();
 

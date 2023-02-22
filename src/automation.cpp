@@ -1,6 +1,6 @@
+#include <cstdio>
 #include "automation.h"
 #include "robot-config.h"
-#include "core.h"
 #include "vision.h"
 
 // Pushes the firing flap to the up position for close in shots
