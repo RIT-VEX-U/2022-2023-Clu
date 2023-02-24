@@ -76,7 +76,7 @@ CommandController auto_non_loader_side(){
     // Initialization
     position_t start_pos = {.x=105.75, .y=86.5, .rot=90}; 
     nlsa.add(new OdomSetPosition(odometry_sys, start_pos));
-    nlsa.add(new SpinRPMCommand(flywheel_sys, 3800));
+    nlsa.add(new SpinRPMCommand(flywheel_sys, 3400));
 
     // Drive to roller
     nlsa.add(DRIVE_TO_POINT_FAST(101, 105, fwd));
@@ -159,6 +159,12 @@ CommandController auto_non_loader_side(){
     add_single_shot_cmd(nlsa, 1);
 
     nlsa.add(new FlywheelStopCommand(flywheel_sys));
+
+    // Drive to 3stack for driver
+    nlsa.add(TURN_TO_HEADING(50));
+    nlsa.add(DRIVE_TO_POINT_FAST(90, 95, fwd));
+    nlsa.add(TURN_TO_HEADING(136));
+
     return nlsa;
     
     

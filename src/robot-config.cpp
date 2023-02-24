@@ -31,6 +31,7 @@ CustomEncoder left_enc(Brain.ThreeWirePort.A, 2048);
 CustomEncoder right_enc(Brain.ThreeWirePort.C, 2048);
 
 inertial imu(PORT12);
+vex::analog_in mode_switch(Brain.ThreeWirePort.F);
 
 // ======== UTILS ========
 
@@ -119,7 +120,7 @@ FeedForward::ff_config_t flywheel_ff_cfg = {
 };
 
 PID::pid_config_t flywheel_pid_cfg = {
-    .p = .003,
+    .p = .001,
     // .d = 0.000015,
 };
 
@@ -142,6 +143,28 @@ std::string AutoNonLoaderSideDisplayName = "Auto Non Loader Side";
 std::string SkillsLoaderSideDisplayName = "Skills Loader Side";
 std::string SkillsNonLoaderSideDisplayName = "Skills Non Loader Side";
 
+RobotMode curr_mode = INIT;
+
+#define MODE_AUTOSKILLS_PCT 74
+#define MODE_COMP_PCT 25
+#define MODE_TEST1_PCT 10
+
+void select_mode()
+{
+    mode_switch.value(pct);
+    vexDelay(500);
+    int ang = mode_switch.value(pct);
+
+    if(ang > MODE_AUTOSKILLS_PCT)
+        curr_mode = AUTOSKILLS;
+    else if (ang > MODE_COMP_PCT)
+        curr_mode = COMP;
+    else if (ang > MODE_TEST1_PCT)
+        curr_mode = TEST1;
+    else
+        curr_mode = TEST2;
+}
+
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
  *
@@ -149,5 +172,10 @@ std::string SkillsNonLoaderSideDisplayName = "Skills Non Loader Side";
  */
 void vexcodeInit(void) {
     endgame_solenoid.set(false); //TODO figure out if false or true shoots 
+    
+    // Select the mode on setup, and whenever the pot changes
+    // select_mode();
+    // mode_switch.changed(select_mode);
+
     imu.calibrate();
 }

@@ -223,15 +223,16 @@ bool SpinToColorCommand::run()
 }
 
 PID::pid_config_t vis_pid_cfg = {
-    .p = .0008,
+    .p = .003,
     // .d = .0001,
     .deadband = 5,
     .on_target_time = .2};
 
 FeedForward::ff_config_t vis_ff_cfg = {
-    .kS = 0.08};
+    .kS = 0.07
+    };
 
-#define VISION_CENTER 155
+#define VISION_CENTER 145
 #define MIN_AREA 500
 #define MAX_SPEED 0.5
 #define FALLBACK_MAX_DEGREES 10
@@ -256,7 +257,8 @@ bool VisionAimCommand::run()
     first_run = false;
   }
 
-  if (fallback_triggered || fabs(OdometryBase::smallest_angle(stored_pos.rot, odometry_sys.get_position().rot)) > FALLBACK_MAX_DEGREES)
+  if (odometry_fallback && 
+  (fallback_triggered || fabs(OdometryBase::smallest_angle(stored_pos.rot, odometry_sys.get_position().rot)) > FALLBACK_MAX_DEGREES))
   {
     fallback_triggered = true;
     if (drive_sys.turn_to_heading(stored_pos.rot, 0.6))

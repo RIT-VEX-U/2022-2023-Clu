@@ -1,77 +1,8 @@
 #include "competition/opcontrol.h"
 #include "robot-config.h"
 #include "tuning.h"
+#include "testing.h"
 #include "competition/autonomous_clu.h"
-
-void tuning()
-{
-  while(imu.isCalibrating()){}
-  // tune_odometry_wheel_diam();
-  // tune_odometry_wheelbase();
-  // tune_flywheel_ff();
-  // tune_drive_ff_ks(TURN);
-  // tune_drive_ff_kv(TURN, 0.12);
-  // tune_drive_motion_maxv(TURN);
-  // tune_drive_motion_accel(TURN, 700);
-  // tune_drive_pid(TURN);
-  
-  // auto pos = odometry_sys.get_position();
-  // main_controller.Screen.clearScreen();
-  // main_controller.Screen.setCursor(0, 0);
-  // main_controller.Screen.print("(%.3f, %.3f) : %.3f", pos.x, pos.y, pos.rot);
-  // printf("X: %f, Y: %f, R: %f\n", pos.x, pos.y, pos.rot);
-  // motion_t cur_motion = turn_fast_mprofile.get_motion();
-  // double s = (cur_motion.pos != 0? 24 + cur_motion.pos : 0);
-  // double s = cur_motion.pos + 180; //(cur_motion.pos != 0? 90 + cur_motion.pos : 0) + 90;
-  // printf("%.2f %.2f %.2f %.2f %.2f %.2f %.2f\n", tmr.time(sec), s, pos.rot, fabs(cur_motion.vel), fabs(odometry_sys.get_angular_speed_deg()), cur_motion.accel, odometry_sys.get_angular_accel_deg());
-
-  // if(main_controller.ButtonX.pressing())
-  //   drive_sys.drive_tank(.11, -.11);
-
-  
-}
-
-void programmers_opcontrol()
-{
-  // while(true) {tuning(); vexDelay(20);}
-  while(imu.isCalibrating()){}
-
-  auto_non_loader_side().run();
-
-  flywheel_sys.stop();
-  intake.stop();
-  
-  // flywheel_sys.spinRPM(3800);
-  VisionAimCommand visaim(false);
-  position_t pos;
-  while(true)
-  {
-    // tuning();
-    // if(main_controller.ButtonUp.pressing())
-      // flywheel_sys.spin_raw(1, fwd);
-    //   flywheel_sys.spinRPM(2500);
-    // else if (main_controller.ButtonDown.pressing())
-    
-    
-    // printf("RPM: %2f\n", flywheel_sys.getRPM());
-    pos = odometry_sys.get_position();
-    printf("X: %2f, Y: %2f, R: %2f\n", pos.x, pos.y, pos.rot);
-    
-    if(main_controller.ButtonA.pressing())
-      visaim.run();
-    else
-      drive_sys.drive_arcade(main_controller.Axis3.position() / 200.0, main_controller.Axis1.position() / 200.0);
-
-    if(main_controller.ButtonR2.pressing())
-      intake.spin(directionType::fwd, 12, volt);
-    else if(main_controller.ButtonR1.pressing())
-      intake.spin(directionType::rev, 12, volt);
-    else
-      intake.stop();
-
-    vexDelay(20);
-  }
-}
 
 void print_to_screen()
 {
@@ -111,7 +42,24 @@ void tripleshot()
  */
 void opcontrol()
 {
-  // programmers_opcontrol();
+  test1_opcontrol();
+  // select_mode();
+  // printf("angle: %d mode: %d\n",mode_switch.value(pct), curr_mode);
+  // return;
+  // Select Mode
+  // switch(curr_mode)
+  // {
+  //   case TEST1:
+  //     test1_opcontrol();
+  //     return;
+  //   case TEST2:
+  //     test2_opcontrol();
+  //     return;
+
+  //   default:
+  //     // Competition, or other defaults just continue
+  //     break;
+  // }
 
   // Initialization
   printf("starting\n");
@@ -154,7 +102,7 @@ void opcontrol()
   // Periodic
   while(true)
   {
-    print_to_screen();
+    // print_to_screen();
     // i++;
     // if (i % 5 == 0)
     // {

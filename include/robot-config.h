@@ -26,6 +26,8 @@ extern inertial imu;
 
 extern vex::optical colorSensor;
 
+extern vex::analog_in mode_switch;
+
 // ======== UTILS ========
 // Drive Tuning
 
@@ -56,6 +58,15 @@ extern std::string AutoLoaderSideDisplayName;
 extern std::string AutoNonLoaderSideDisplayName;
 extern std::string SkillsLoaderSideDisplayName;
 extern std::string SkillsNonLoaderSideDisplayName;
+
+enum RobotMode
+{
+    INIT,AUTOSKILLS,COMP,TEST1,TEST2
+};
+
+extern RobotMode curr_mode;
+
+void select_mode();
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.

@@ -20,14 +20,33 @@ void autonomous()
     while(imu.isCalibrating()){
       vexDelay(20);
     }
-    CommandController current_auto = prog_skills_non_loader_side();
-    // CommandController current_auto = auto_non_loader_side();
-    current_auto.run();
-    while(true){
-      flywheel_sys.stop();
-      intake.stop();
-      drive_sys.stop();
+
+    CommandController *current_auto = NULL;
+
+    switch(curr_mode)
+    {
+      case COMP:
+      case TEST1:
+      case TEST2:
+        *current_auto = auto_non_loader_side();
+        break;
+      case AUTOSKILLS:
+        *current_auto = prog_skills_non_loader_side();
+        break;
+
+      default:
+        break;
     }
+
+    if(current_auto != NULL)
+    {
+      current_auto->run();
+      delete current_auto;
+    }
+
+    flywheel_sys.stop();
+    intake.stop();
+    drive_sys.stop();
 
 }
 
