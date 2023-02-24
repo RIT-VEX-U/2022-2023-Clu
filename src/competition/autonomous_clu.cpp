@@ -77,6 +77,7 @@ CommandController auto_non_loader_side(){
     position_t start_pos = {.x=105.75, .y=86.5, .rot=90}; 
     nlsa.add(new OdomSetPosition(odometry_sys, start_pos));
     nlsa.add(new SpinRPMCommand(flywheel_sys, 3400));
+    nlsa.add(new FlapDownCommand());
 
     // Drive to roller
     nlsa.add(DRIVE_TO_POINT_FAST(101, 105, fwd));
@@ -114,6 +115,8 @@ CommandController auto_non_loader_side(){
     add_single_shot_cmd(nlsa, 1);
     add_single_shot_cmd(nlsa, 1);
 
+    nlsa.add_delay(2000);
+
     // Intake 2 disk 1-2
     nlsa.add(TURN_TO_HEADING(251));
     nlsa.add(new StartIntakeCommand(intake, INTAKE_VOLT));
@@ -130,13 +133,13 @@ CommandController auto_non_loader_side(){
     add_single_shot_cmd(nlsa, 1);
 
     // Drive to Intake 3
-    nlsa.add(DRIVE_TO_POINT_FAST(80, 68, rev));
+    nlsa.add(DRIVE_TO_POINT_FAST(82, 68, rev));
     nlsa.add(TURN_TO_HEADING(266));
 
     //Intake 3.1
     nlsa.add(new StartIntakeCommand(intake, INTAKE_VOLT));
-    nlsa.add(DRIVE_TO_POINT_SLOW(80, 58, fwd));
-    nlsa.add(DRIVE_TO_POINT_FAST(80, 68, rev));
+    nlsa.add(DRIVE_TO_POINT_SLOW(82, 58, fwd));
+    nlsa.add(DRIVE_TO_POINT_FAST(82, 68, rev));
 
     // Intake 3.2
     nlsa.add(DRIVE_TO_POINT_SLOW(86.9, 57.5, fwd));
@@ -162,7 +165,7 @@ CommandController auto_non_loader_side(){
 
     // Drive to 3stack for driver
     nlsa.add(TURN_TO_HEADING(50));
-    nlsa.add(DRIVE_TO_POINT_FAST(90, 95, fwd));
+    nlsa.add(DRIVE_TO_POINT_FAST(90, 100, fwd));
     nlsa.add(TURN_TO_HEADING(136));
 
     return nlsa;

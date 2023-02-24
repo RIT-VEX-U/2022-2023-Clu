@@ -21,28 +21,30 @@ void autonomous()
       vexDelay(20);
     }
 
-    CommandController *current_auto = NULL;
+    // CommandController *current_auto = NULL;
 
-    switch(curr_mode)
-    {
-      case COMP:
-      case TEST1:
-      case TEST2:
-        *current_auto = auto_non_loader_side();
-        break;
-      case AUTOSKILLS:
-        *current_auto = prog_skills_non_loader_side();
-        break;
+    // switch(curr_mode)
+    // {
+    //   case COMP:
+    //   case TEST1:
+    //   case TEST2:
+    //     *current_auto = auto_non_loader_side();
+    //     break;
+    //   case AUTOSKILLS:
+    //     *current_auto = prog_skills_non_loader_side();
+    //     break;
 
-      default:
-        break;
-    }
+    //   default:
+    //     break;
+    // }
 
-    if(current_auto != NULL)
-    {
-      current_auto->run();
-      delete current_auto;
-    }
+    // if(current_auto != NULL)
+    // {
+    //   current_auto->run();
+    //   delete current_auto;
+    // }
+
+    auto_non_loader_side().run();
 
     flywheel_sys.stop();
     intake.stop();

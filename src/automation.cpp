@@ -223,7 +223,7 @@ bool SpinToColorCommand::run()
 }
 
 PID::pid_config_t vis_pid_cfg = {
-    .p = .003,
+    .p = .002,
     // .d = .0001,
     .deadband = 5,
     .on_target_time = .2};

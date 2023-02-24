@@ -9,6 +9,7 @@ void test1_opcontrol()
     // Test1: Match Auto Testing
     while(imu.isCalibrating()){}
     auto_non_loader_side().run();
+    // prog_skills_non_loader_side().run();
     
     programmers_opcontrol();
 }
@@ -83,7 +84,7 @@ void programmers_opcontrol()
         flap_down();
 
       buttonX_newpress = false;
-    }else
+    }else if (!main_controller.ButtonX.pressing())
     {
       buttonX_newpress = true;
     }
