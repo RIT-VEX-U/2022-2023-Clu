@@ -68,10 +68,10 @@ void opcontrol()
   printf("starting\n");
   fflush(stdout);
 
-  #define INTAKE_NORMAL 9.5
-  #define INTAKE_OVERFILL 7.5
-  #define FLYWHEEL_NORMAL 4000
-  #define FLYWHEEL_OVERFILL 3000
+#define INTAKE_NORMAL 9.5
+#define INTAKE_OVERFILL 9.5
+#define FLYWHEEL_NORMAL 4000
+#define FLYWHEEL_OVERFILL 3000
 
   static std::atomic<double> cur_intake_volt(INTAKE_NORMAL);
   static std::atomic<double> cur_flywheel_rpm(FLYWHEEL_NORMAL);
@@ -83,8 +83,10 @@ void opcontrol()
                                     { intake.stop(); });
 
   // Shoot - R2
-  main_controller.ButtonR2.pressed([](){intake.spin(fwd, cur_intake_volt, volt);}); 
-  main_controller.ButtonR2.released([](){intake.stop();});
+  main_controller.ButtonR2.pressed([]()
+                                   { intake.spin(fwd, cur_intake_volt, volt); });
+  main_controller.ButtonR2.released([]()
+                                    { intake.stop(); });
 
   // Flap - Y
   main_controller.ButtonY.pressed([]()
@@ -94,28 +96,28 @@ void opcontrol()
     flapup_solenoid.set(flapUp); });
 
   // Single Shot - L2
-  main_controller.ButtonL2.pressed([](){
+  main_controller.ButtonL2.pressed([]()
+                                   {
     intake.spin(fwd, 9.5, volt);
     vexDelay(SHOTLENGTH);
     intake.stop();
-    vexDelay(DELAYLENGTH);
-    });
+    vexDelay(DELAYLENGTH); });
 
-  main_controller.ButtonLeft.pressed([](){
+  main_controller.ButtonLeft.pressed([]()
+                                     {
     cur_intake_volt = INTAKE_OVERFILL;
     cur_flywheel_rpm = FLYWHEEL_OVERFILL;
 
-    flywheel_sys.spinRPM(cur_flywheel_rpm);
-  });
+    flywheel_sys.spinRPM(cur_flywheel_rpm); });
 
-  main_controller.ButtonRight.pressed([](){
+  main_controller.ButtonRight.pressed([]()
+                                      {
     cur_intake_volt = INTAKE_NORMAL;
     cur_flywheel_rpm = FLYWHEEL_NORMAL;
 
-    flywheel_sys.spinRPM(cur_flywheel_rpm);
-  });
- 
-  // Flywheel set RPM 
+    flywheel_sys.spinRPM(cur_flywheel_rpm); });
+
+  // Flywheel set RPM
   flywheel_sys.spinRPM(cur_flywheel_rpm);
   odometry_sys.end_async();
 
@@ -163,22 +165,16 @@ void opcontrol()
     if (main_controller.ButtonDown.pressing())
     {
       flywheel_sys.stop();
-    else if(main_controller.ButtonUp.pressing())
+    }
+    else if (main_controller.ButtonUp.pressing())
+    {
       flywheel_sys.spinRPM(cur_flywheel_rpm);
+    }
 
     // ========== SECONDARY REMOTE ==========
 
     // ========== AUTOMATION ==========
 
-#ifdef TESTING_BUILD
-    auto screen = Brain.Screen;
-    screen.clearScreen();
-    setpt_graph.draw(20, 20, 360, 200);
-    rpm_graph.draw(20, 20, 400, 200);
-    screen.printAt(390, 100, "sp: %.0f", flywheel_sys.getDesiredRPM());
-    screen.printAt(390, 120, "pv: %.0f", flywheel_sys.getRPM());
-    screen.render();
-#endif
     vexDelay(20);
   }
 }
