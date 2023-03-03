@@ -319,7 +319,7 @@ CommandController prog_skills_loader_side()
   Vector2D::point_t corner_disk_point = {.x = 8, .y = 12};
   lss.add({
       DriveForwardFast(1, fwd),                     // #2
-      new SpinRollerCommandAUTO(drive_sys, roller), // #3
+      // new SpinRollerCommandAUTO(drive_sys, roller), // #3
       DriveForwardFast(4, reverse),                 // #4
   });
 
@@ -343,7 +343,7 @@ CommandController prog_skills_loader_side()
 
       // spin 180 degree roller
       DriveForwardFast(2, fwd),                     // #14
-      new SpinRollerCommandAUTO(drive_sys, roller), // #15
+      // new SpinRollerCommandAUTO(drive_sys, roller), // #15
       DriveForwardFast(2, reverse),                 // #16
 
       // drive to shoot point
@@ -532,7 +532,7 @@ CommandController auto_loader_side()
   lsa.add(SpinFWAt(3000));
   // spin -90 degree roller
   lsa.add(DriveForwardFast(1, fwd)); //[measure]
-  lsa.add(new SpinRollerCommandAUTO(drive_sys, roller));
+  // lsa.add(new SpinRollerCommandAUTO(drive_sys, roller));
   lsa.add(DriveForwardFast(4, reverse)); // [measure]
 
   Vector2D::point_t first_shoot_point = {.x = 69, .y = 47};

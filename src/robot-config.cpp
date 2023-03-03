@@ -143,6 +143,9 @@ std::string AutoNonLoaderSideDisplayName = "Auto Non Loader Side";
 std::string SkillsLoaderSideDisplayName = "Skills Loader Side";
 std::string SkillsNonLoaderSideDisplayName = "Skills Non Loader Side";
 
+bool target_red = true;
+bool vision_enabled = false;
+
 RobotMode curr_mode = INIT;
 
 #define MODE_AUTOSKILLS_PCT 74

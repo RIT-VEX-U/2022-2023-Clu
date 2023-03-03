@@ -40,7 +40,8 @@ bool FlapDownCommand::run()
  * @param drive_sys the drive train that will allow us to apply pressure on the rollers
  * @param roller_motor The motor that will spin the roller
  */
-SpinRollerCommandAUTO::SpinRollerCommandAUTO(TankDrive &drive_sys, vex::motor &roller_motor) : drive_sys(drive_sys), roller_motor(roller_motor) {}
+SpinRollerCommandAUTO::SpinRollerCommandAUTO(TankDrive &drive_sys, vision &cam, position_t &align_pos) 
+: drive_sys(drive_sys), cam(cam), align_pos(align_pos) {}
 
 /**
  * Run roller controller to spin the roller to our color
@@ -49,38 +50,17 @@ SpinRollerCommandAUTO::SpinRollerCommandAUTO(TankDrive &drive_sys, vex::motor &r
  */
 bool SpinRollerCommandAUTO::run()
 {
-  const double roller_cutoff_threshold = .05;      // revolutions // [measure]
-  const double num_revolutions_to_spin_motor = -2; // revolutions // [measure]
-  const double drive_power = .2;                   // [measure]
-
-  // Initialize start and end position if not already
-  if (!func_initialized)
+  static bool check_pos = true;
+  
+  if(check_pos)
   {
-    start_pos = roller_motor.position(vex::rev);
-    target_pos = start_pos + num_revolutions_to_spin_motor;
-    func_initialized = true;
+    // Vision Stuff
+    
+    
   }
 
-  // Calculate error
-  double current_pos = roller_motor.position(vex::rev);
-  double error = target_pos - current_pos;
 
-  // If we're close enough, call it here.
-  if (fabs(error) > roller_cutoff_threshold < roller_cutoff_threshold)
-  {
-    func_initialized = false;
-    roller_motor.stop();
-    return true;
-  }
-
-  vex::directionType dir = fwd;
-  if (error < 0)
-  {
-    dir = reverse;
-  }
-  // otherwise, do a P controller
-  roller_motor.spin(dir, 8, vex::volt);
-  drive_sys.drive_tank(drive_power, drive_power);
+  
   return false;
 }
 
@@ -223,14 +203,13 @@ bool SpinToColorCommand::run()
 }
 
 PID::pid_config_t vis_pid_cfg = {
-    .p = .002,
+    .p = .003,
     // .d = .0001,
     .deadband = 5,
     .on_target_time = .2};
 
 FeedForward::ff_config_t vis_ff_cfg = {
-    .kS = 0.07
-    };
+    .kS = 0.07};
 
 #define VISION_CENTER 145
 #define MIN_AREA 500
@@ -250,15 +229,15 @@ VisionAimCommand::VisionAimCommand(bool odometry_fallback)
 bool VisionAimCommand::run()
 {
 
-  if (first_run)
+ if (first_run)
   {
     stored_pos = odometry_sys.get_position();
     drive_sys.reset_auto();
     first_run = false;
   }
 
-  if (odometry_fallback && 
-  (fallback_triggered || fabs(OdometryBase::smallest_angle(stored_pos.rot, odometry_sys.get_position().rot)) > FALLBACK_MAX_DEGREES))
+  if (odometry_fallback &&
+      (fallback_triggered || fabs(OdometryBase::smallest_angle(stored_pos.rot, odometry_sys.get_position().rot)) > FALLBACK_MAX_DEGREES))
   {
     fallback_triggered = true;
     if (drive_sys.turn_to_heading(stored_pos.rot, 0.6))
@@ -269,6 +248,9 @@ bool VisionAimCommand::run()
 
   // If the camera isn't installed, move on to the next command
   if (!cam.installed())
+    return true;
+  // If we have disabled vision on the screen, move on to the next command
+  if (!vision_enabled)
     return true;
 
   // Take a snapshot with each color selected,
@@ -292,10 +274,14 @@ bool VisionAimCommand::run()
   double blue_area = blue_obj.width * blue_obj.height;
   int x_val = 0;
 
-  if (red_area > blue_area && red_area > MIN_AREA)
+  if (red_area > blue_area && red_area > MIN_AREA && target_red)
+  {
     x_val = red_obj.centerX;
-  else if (blue_area > red_area && blue_area > MIN_AREA)
+  }
+  else if (blue_area > red_area && blue_area > MIN_AREA && !target_red)
+  {
     x_val = blue_obj.centerX;
+  }
 
   printf("CenterX: %d\n", x_val);
 
@@ -377,20 +363,21 @@ bool FunctionCommand::run()
  */
 WallAlignCommand::WallAlignCommand(TankDrive &drive_sys, OdometryTank &odom, double x, double y, double heading, double drive_power, double time) : drive_sys(drive_sys), odom(odom), x(x), y(y), heading(heading), time(time), func_initialized(false) {}
 
-
 /**
  * reset the position to that which is specified
-*/
+ */
 bool WallAlignCommand::run()
 {
   // Start cutoff timer
-  if (!func_initialized){
+  if (!func_initialized)
+  {
     tmr.reset();
     func_initialized = true;
   }
 
-  // If we're not cutoff, drive 
-  if (tmr.time(seconds) < time){
+  // If we're not cutoff, drive
+  if (tmr.time(seconds) < time)
+  {
     drive_sys.drive_tank(drive_power, drive_power);
     return false;
   }

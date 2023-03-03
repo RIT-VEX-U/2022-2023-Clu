@@ -66,12 +66,20 @@ void opcontrol()
   printf("starting\n");
   fflush(stdout);
 
+  #define INTAKE_NORMAL 9.5
+  #define INTAKE_OVERFILL 7.5
+  #define FLYWHEEL_NORMAL 4000
+  #define FLYWHEEL_OVERFILL 3000
+
+  static std::atomic<double> cur_intake_volt(INTAKE_NORMAL);
+  static std::atomic<double> cur_flywheel_rpm(FLYWHEEL_NORMAL);
+
   // Intake - R1
   main_controller.ButtonR1.pressed([](){intake.spin(reverse, 12, volt);}); 
   main_controller.ButtonR1.released([](){intake.stop();});
 
   // Shoot - R2
-  main_controller.ButtonR2.pressed([](){intake.spin(fwd, 9.5, volt);}); 
+  main_controller.ButtonR2.pressed([](){intake.spin(fwd, cur_intake_volt, volt);}); 
   main_controller.ButtonR2.released([](){intake.stop();});
 
   // Flap - Y
@@ -83,14 +91,28 @@ void opcontrol()
 
   // Single Shot - L2
   main_controller.ButtonL2.pressed([](){
-    intake.spin(fwd, 12, volt);
+    intake.spin(fwd, 9.5, volt);
     vexDelay(SHOTLENGTH);
     intake.stop();
     vexDelay(DELAYLENGTH);
     });
+
+  main_controller.ButtonLeft.pressed([](){
+    cur_intake_volt = INTAKE_OVERFILL;
+    cur_flywheel_rpm = FLYWHEEL_OVERFILL;
+
+    flywheel_sys.spinRPM(cur_flywheel_rpm);
+  });
+
+  main_controller.ButtonRight.pressed([](){
+    cur_intake_volt = INTAKE_NORMAL;
+    cur_flywheel_rpm = FLYWHEEL_NORMAL;
+
+    flywheel_sys.spinRPM(cur_flywheel_rpm);
+  });
  
   // Flywheel set RPM 
-  flywheel_sys.spinRPM(4000);
+  flywheel_sys.spinRPM(cur_flywheel_rpm);
   odometry_sys.end_async();
   
   flap_up();
@@ -132,7 +154,7 @@ void opcontrol()
     if(main_controller.ButtonDown.pressing())
       flywheel_sys.stop();
     else if(main_controller.ButtonUp.pressing())
-      flywheel_sys.spinRPM(4000);
+      flywheel_sys.spinRPM(cur_flywheel_rpm);
 
     // ========== SECONDARY REMOTE ==========
 

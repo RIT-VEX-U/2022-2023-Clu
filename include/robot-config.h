@@ -68,6 +68,9 @@ extern RobotMode curr_mode;
 
 void select_mode();
 
+extern bool target_red;
+extern bool vision_enabled;
+
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
  *
