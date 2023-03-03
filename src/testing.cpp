@@ -61,15 +61,14 @@ void programmers_opcontrol()
     // Odometry Info
     pos = odometry_sys.get_position();
     
-    
     // Vision Aim Tuning
-    if(main_controller.ButtonA.pressing())
-      visaim.run();
-    else
-    {
-      drive_sys.drive_arcade(main_controller.Axis3.position() / 200.0, main_controller.Axis1.position() / 200.0);
-      printf("X: %2f, Y: %2f, R: %2f\n", pos.x, pos.y, pos.rot);
-    }
+    // if(main_controller.ButtonA.pressing())
+    //   visaim.run();
+    // else
+    // {
+    drive_sys.drive_arcade(main_controller.Axis3.position() / 200.0, main_controller.Axis1.position() / 200.0);
+    printf("X: %2f, Y: %2f, R: %2f\n", pos.x, pos.y, pos.rot);
+    // }
 
     // Flap Controls
     static bool flap_is_up = false;
@@ -90,8 +89,22 @@ void programmers_opcontrol()
     }
 
     // Intake Controls
+    static bool intake_btn_pressing = false;
+    static double intake_speed = 9.5;
+
+    if(!intake_btn_pressing)
+    {
+      if(main_controller.ButtonA.pressing())
+        intake_speed += .5;
+      else if(main_controller.ButtonY.pressing())
+        intake_speed -= .5;
+    }
+
+    intake_btn_pressing = main_controller.ButtonA.pressing() 
+    ||  main_controller.ButtonY.pressing();
+    
     if(main_controller.ButtonR2.pressing())
-      intake.spin(directionType::fwd, 12, volt);
+      intake.spin(directionType::fwd, intake_speed, volt);
     else if(main_controller.ButtonR1.pressing())
       intake.spin(directionType::rev, 12, volt);
     else
@@ -126,11 +139,18 @@ void programmers_opcontrol()
       flywheel_sys.spinRPM(flywheel_setpt);
     }
 
-    static timer screen_tmr;
-    if(screen_tmr.time(timeUnits::msec) > 500)
+    if(intake_btn_pressing)
     {
       main_controller.Screen.clearLine(2);
       main_controller.Screen.setCursor(2, 0);
+      main_controller.Screen.print("Intake: %f", intake_speed);
+    }
+
+    static timer screen_tmr;
+    if(screen_tmr.time(timeUnits::msec) > 500)
+    {
+      main_controller.Screen.clearLine(3);
+      main_controller.Screen.setCursor(3, 0);
       main_controller.Screen.print("Flywheel Temp: %2f", flywheel.temperature(temperatureUnits::fahrenheit));
 
       screen_tmr.reset();
