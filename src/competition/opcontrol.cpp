@@ -1,88 +1,182 @@
 #include "competition/opcontrol.h"
-#include "competition/autonomous_clu.h"
-#include "automation.h"
 #include "robot-config.h"
 #include "tuning.h"
-#include "vision.h"
-#include <stdio.h>
+#include "testing.h"
+#include "competition/autonomous_clu.h"
+#define TESTING_BUILD
 
-int print_odom()
+void print_to_screen()
 {
-  while (true)
+  static timer tmr;
+
+  if (tmr.time() > 1)
   {
-    position_t pos = odometry_sys.get_position();
-    printf("%.2f, %.2f, %.2f\n", pos.x, pos.y, pos.rot);
-    vexDelay(100);
+    Brain.Screen.clearScreen();
+    Brain.Screen.setCursor(0, 0);
+    Brain.Screen.print("Battery: %d%", Brain.Battery.capacity());
+    Brain.Screen.print("Flywheel Temp: %2f F", flywheel.temperature());
+    Brain.Screen.setCursor(1, 0);
+    if (flywheel.installed())
+      Brain.Screen.print("Flywheel Connected");
+    else
+      Brain.Screen.print("WARNING || FLYWHEEL DISCONNECTED!");
+    Brain.Screen.print("Flywheel RPM: %2f", flywheel_sys.getRPM());
+    tmr.reset();
   }
-  return 0;
+}
+
+#define SHOTLENGTH 100
+#define DELAYLENGTH 300
+void tripleshot()
+{
+  for (int i = 0; i < 3; i++)
+  {
+    intake.spin(fwd, 12, volt);
+    vexDelay(SHOTLENGTH);
+    intake.stop();
+    vexDelay(DELAYLENGTH);
+  }
 }
 
 
 /**
  * Contains the main loop of the robot code while running in the driver-control period.
  */
+
 void opcontrol()
 {
-  StartScreen(Brain.Screen, {page_one, page_two});
-  testing();
-  //testing();
-  //draw_image();
-  //Brain.Screen.drawImageFromBuffer(&intense_milk[0], 0, 0, intense_milk_width , intense_milk_height);
-  endgame_solenoid.set(false);
-  flapup_solenoid.set(false);
+  // test1_opcontrol();
+  // programmers_opcontrol();
+  // select_mode();
+  // printf("angle: %d mode: %d\n",mode_switch.value(pct), curr_mode);
+  // return;
+  // Select Mode
+  // switch(curr_mode)
+  // {
+  //   case TEST1:
+  //     test1_opcontrol();
+  //     return;
+  //   case TEST2:
+  
+  //     test2_opcontrol();
+  //     return;
+
+  //   default:
+  //     // Competition, or other defaults just continue
+  //     break;
+  // }
 
   // Initialization
-  double oneshot_time = .05; // Change 1 second to whatever is needed
-  bool oneshotting = false;
-  flywheel_sys.spinRPM(3200);
+  printf("starting\n");
+  fflush(stdout);
 
-  main_controller.ButtonUp.pressed([]()
-                                   { flywheel_sys.spinRPM(3400); });
-  main_controller.ButtonLeft.pressed([]()
-                                     { flywheel_sys.spinRPM(3100); });
-  main_controller.ButtonRight.pressed([]()
-                                      { flywheel_sys.spinRPM(3200); });
+#define INTAKE_NORMAL 9.5
+#define INTAKE_OVERFILL 9.5
+#define FLYWHEEL_NORMAL 4000
+#define FLYWHEEL_OVERFILL 3000
 
-  main_controller.ButtonDown.pressed([]()
-                                     { flywheel_sys.stop(); });
+  static std::atomic<double> cur_intake_volt(INTAKE_NORMAL);
+  static std::atomic<double> cur_flywheel_rpm(FLYWHEEL_NORMAL);
 
-  main_controller.ButtonR1.pressed([]()
-                                   { intake.spin(reverse, 12, volt); }); // Intake
-  main_controller.ButtonR2.pressed([]()
-                                   { intake.spin(fwd, 9.5, volt); }); // Shoot
+  // Intake - R1
+  main_controller.ButtonR1.pressed([](){ intake.spin(reverse, 12, volt); });
+  main_controller.ButtonR1.released([](){ intake.stop(); });
 
-  main_controller.ButtonL1.pressed([]()
-                                   { flapup_solenoid.set(false); }); // Flapup
+  // Shoot - R2
+  main_controller.ButtonR2.pressed([](){ intake.spin(fwd, cur_intake_volt, volt); });
+  main_controller.ButtonR2.released([](){ intake.stop(); });
+
+  // Flap - Y
+  main_controller.ButtonY.pressed([]()
+  {
+    static bool flapUp = false;
+    flapUp = !flapUp;
+    flapup_solenoid.set(flapUp); 
+  });
+
+  // Single Shot - L2
   main_controller.ButtonL2.pressed([]()
-                                   { flapup_solenoid.set(true); }); // Flaodown
+  {
+    intake.spin(fwd, 9.5, volt);
+    vexDelay(SHOTLENGTH);
+    intake.stop();
+    vexDelay(DELAYLENGTH); 
+  });
 
-  main_controller.ButtonB.pressed([]()
-                                  { odometry_sys.set_position(); });
+  main_controller.ButtonLeft.pressed([]()
+  {
+    cur_intake_volt = INTAKE_OVERFILL;
+    cur_flywheel_rpm = FLYWHEEL_OVERFILL;
 
-  // odometry_sys.end_async();
+    flywheel_sys.spinRPM(cur_flywheel_rpm); 
+  });
 
+  main_controller.ButtonRight.pressed([]()
+  {
+    cur_intake_volt = INTAKE_NORMAL;
+    cur_flywheel_rpm = FLYWHEEL_NORMAL;
+
+    flywheel_sys.spinRPM(cur_flywheel_rpm); 
+  });
+
+  // Flywheel set RPM
+  flywheel_sys.spinRPM(cur_flywheel_rpm);
+  odometry_sys.end_async();
+
+  flap_up();
+  timer tmr;
+
+  GraphDrawer setpt_graph(Brain.Screen, 30, "RPM", "Time", vex::red, true, 0, 4000);
+  GraphDrawer rpm_graph(Brain.Screen, 30, "RPM", "Time", vex::red, true, 0, 4000);
+
+  VisionAimCommand visaim;
+  int i = 0;
+  double time = 0.0;
   // Periodic
   while (true)
   {
-    // ========== DRIVING CONTROLS ==========
-    drive_sys.drive_tank(main_controller.Axis3.position() / 100.0, main_controller.Axis2.position() / 100.0);
-    // ========== MANIPULATING CONTROLS ==========
+    // print_to_screen();
+    i++;
+    if (i % 5 == 0)
+    {
+      main_controller.Screen.setCursor(0, 0);
+      main_controller.Screen.clearScreen();
+      main_controller.Screen.print("fw rpm: %f", flywheel_sys.getRPM());
+      main_controller.Screen.setCursor(2, 0);
+      main_controller.Screen.print("fw temp: %.1ff", flywheel.temperature(vex::fahrenheit));
+      main_controller.Screen.setCursor(4, 0);
+      main_controller.Screen.print("bat fw : %.2fv %.2fv", Brain.Battery.voltage(vex::volt), flywheel.voltage(volt));
+    }
+    time += 0.02;
+    setpt_graph.add_sample(Vector2D::point_t{.x = time, .y = flywheel_sys.getDesiredRPM()});
+    rpm_graph.add_sample(Vector2D::point_t{.x = time, .y = flywheel_sys.getRPM()});
 
-    if (main_controller.ButtonY.pressing() && main_controller.ButtonRight.pressing())
+    // ========== DRIVING CONTROLS ==========
+    if (!main_controller.ButtonX.pressing())
+      drive_sys.drive_tank(main_controller.Axis3.position() / 100.0, main_controller.Axis2.position() / 100.0);
+    else
+      visaim.run();
+    // drive_sys.drive_arcade(main_controller.Axis3.position()/100.0, main_controller.Axis1.position()/100.0);
+
+    // ========== MANIPULATING CONTROLS ==========
+    if (main_controller.ButtonL1.pressing() && main_controller.ButtonL2.pressing() && main_controller.ButtonR1.pressing() && main_controller.ButtonR2.pressing())
     {
       endgame_solenoid.set(true);
     }
 
-    oneshotting = oneshot_tmr.time(vex::sec) < oneshot_time;
-    if (!main_controller.ButtonR1.pressing() && !main_controller.ButtonR2.pressing() && !oneshotting)
+    if (main_controller.ButtonDown.pressing())
     {
-      intake.stop();
+      flywheel_sys.stop();
+    }
+    else if (main_controller.ButtonUp.pressing())
+    {
+      flywheel_sys.spinRPM(cur_flywheel_rpm);
     }
 
     // ========== SECONDARY REMOTE ==========
 
     // ========== AUTOMATION ==========
 
-    vexDelay(0);
+    vexDelay(20);
   }
 }

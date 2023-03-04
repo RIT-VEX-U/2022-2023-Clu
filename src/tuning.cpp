@@ -224,7 +224,7 @@ void tune_drive_pid(DriveType dt)
 
     if (main_controller.ButtonA.pressing())
     {
-        if (dt == DRIVE && (done || drive_sys.drive_to_point(24, 24, fwd, drive_fast_mprofile)))
+        if (dt == DRIVE && (done || drive_sys.drive_to_point(0, 24, fwd, drive_fast_mprofile)))
         {
             auto pos = odometry_sys.get_position();
             printf("%.2f, %.2f, %.2f\n", pos.x, pos.y, pos.rot);

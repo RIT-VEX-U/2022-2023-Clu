@@ -402,28 +402,9 @@ CommandController prog_skills_loader_side()
   // spin -90 degree roller
   Vector2D::point_t corner_disk_point = {.x = 8, .y = 12};
   lss.add({
-
-      (new FunctionCommand([]()
-                           {drive_sys.drive_tank(roller_power, roller_power);return false; }))
-          ->withTimeout(0.65),
-      (new FunctionCommand([]()
-                           {drive_sys.drive_tank(0, 0);return true; })),
-      (new OdomSetPosition(odometry_sys, {.x = 32.0, .y = 4.16, .rot = -90})),
-      (new FunctionCommand([]()
-                           {drive_sys.drive_tank(-roller_power, -roller_power);return false; }))
-          ->withTimeout(0.25),
-
-      (new FunctionCommand([]()
-                           {drive_sys.drive_tank(roller_power, roller_power);return false; }))
-          ->withTimeout(0.65),
-      (new FunctionCommand([]()
-                           {drive_sys.drive_tank(0, 0);return true; })),
-      (new OdomSetPosition(odometry_sys, {.x = 32.0, .y = 4.16, .rot = -90})),
-      (new FunctionCommand([]()
-                           {drive_sys.drive_tank(-roller_power, -roller_power);return false; }))
-          ->withTimeout(0.25),
-
-      DriveForwardFast(4, reverse), // #4
+      DriveForwardFast(1, fwd),                     // #2
+      // new SpinRollerCommandAUTO(drive_sys, roller), // #3
+      DriveForwardFast(4, reverse),                 // #4
   });
 
   // intake corner disk
@@ -448,27 +429,9 @@ CommandController prog_skills_loader_side()
       TurnToHeading(180)->withTimeout(1.5), // #13
 
       // spin 180 degree roller
-      DriveForwardFast(2, fwd), // #14
-      (new FunctionCommand([]()
-                           {drive_sys.drive_tank(+roller_power, +roller_power);return false; }))
-          ->withTimeout(0.5),
-      (new FunctionCommand([]()
-                           {drive_sys.drive_tank(0, 0);return true; })),
-      new OdomSetPosition(odometry_sys, {.x = 5.25, .y = 32.82, .rot = 180}),
-      (new FunctionCommand([]()
-                           {drive_sys.drive_tank(-roller_power, -roller_power);return false; }))
-          ->withTimeout(0.25),
-
-      (new FunctionCommand([]()
-                           {drive_sys.drive_tank(+roller_power, +roller_power);return false; }))
-          ->withTimeout(0.5),
-      (new FunctionCommand([]()
-                           {drive_sys.drive_tank(0, 0);return true; })),
-      new OdomSetPosition(odometry_sys, {.x = 5.25, .y = 32.82, .rot = 180}),
-      (new FunctionCommand([]()
-                           {drive_sys.drive_tank(-roller_power, -roller_power);return false; }))
-          ->withTimeout(0.25),
-      DriveForwardFast(8, reverse), // #16
+      DriveForwardFast(2, fwd),                     // #14
+      // new SpinRollerCommandAUTO(drive_sys, roller), // #15
+      DriveForwardFast(2, reverse),                 // #16
 
       // drive to shoot point
       TurnToPoint(shoot_point)->withTimeout(1.5),       // #17
@@ -632,4 +595,101 @@ CommandController prog_skills_loader_side()
   lss.add(PrintOdom);
 
   return lss;
+}
+
+/*
+Auto loader side
+
+Map from page 40 of the game manual
+
+(R) = Red Hoop, Blue Zone
+(B) = Blue Hoop, Red Zone
+ *  = Starting position for this auto
+
+           ^ 180 degrees
+  +-------------------+
+  |        |____| (R) |
+  |___           |    |
+  | * |          |    |
+  |   |          |    |  --> 90 degrees
+  |   |          |_*__|
+  |___|  ____         |
+  |(B)  |____|        |
+  +-------------------+
+           v 0 degrees
+
+ Human Instructions:
+ Align robot to specified place and angle using LOADER SIDE AUTO jig
+*/
+CommandController auto_loader_side()
+{
+
+  CommandController lsa;
+
+  position_t start_pos = position_t{.x = 30.5, .y = 10.2, .rot = -90};
+
+  CommandController lss;
+  lsa.add(new OdomSetPosition(odometry_sys, start_pos)); // #1
+  lsa.add(new FunctionCommand([]()
+                              {main_controller.Screen.print("Starting\n"); return true; }));
+  lsa.add(SpinFWAt(3000));
+  // spin -90 degree roller
+  lsa.add(DriveForwardFast(1, fwd)); //[measure]
+  // lsa.add(new SpinRollerCommandAUTO(drive_sys, roller));
+  lsa.add(DriveForwardFast(4, reverse)); // [measure]
+
+  Vector2D::point_t first_shoot_point = {.x = 69, .y = 47};
+  lsa.add(TurnToPoint(first_shoot_point));
+  lsa.add(DriveToPointFastPt(first_shoot_point));
+
+  lsa.add(TurnToHeading(120.0));
+  add_single_shot_cmd(lsa);
+
+  lsa.add(TurnToHeading(120.0));
+  add_single_shot_cmd(lsa);
+
+  lsa.add(TurnToHeading(120.0));
+  add_single_shot_cmd(lsa);
+
+  Vector2D::point_t disk_pos1 = {.x = 86.8, .y = 48.10};
+  Vector2D::point_t disk_pos2 = {.x = 87, .y = 39};
+  Vector2D::point_t disk_pos3 = {.x = 87, .y = 25};
+
+  Vector2D::point_t disk_prep_pos2 = {.x = 70, .y = 39};
+  Vector2D::point_t disk_prep_pos3 = {.x = 70, .y = 27};
+
+  // disks against L piece
+  lsa.add({
+      // farthest
+      TurnToPoint(disk_pos1),
+      StartIntake,
+      DriveToPointSlowPt(disk_pos1),
+
+      // middle
+      DriveToPointFastPtRev(disk_prep_pos2),
+      TurnToPoint(disk_pos2),
+      DriveToPointSlowPt(disk_pos2),
+
+      // closest disk
+      DriveToPointFastPtRev(disk_prep_pos3),
+      TurnToPoint(disk_pos3),
+      DriveToPointSlowPt(disk_pos3),
+      DriveToPointFastPtRev(disk_prep_pos3),
+  });
+
+  Vector2D::point_t second_shoot_point = {.x = 66, .y = 50};
+
+  lsa.add(TurnToPoint(second_shoot_point));
+
+  lsa.add(StopIntake);
+
+  lsa.add(DriveToPointFastPt(second_shoot_point));
+
+  lsa.add(TurnToHeading(120.0));
+
+  add_single_shot_cmd(lsa);
+  add_single_shot_cmd(lsa);
+  add_single_shot_cmd(lsa);
+
+  return lsa;
 }

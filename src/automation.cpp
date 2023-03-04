@@ -40,7 +40,8 @@ bool FlapDownCommand::run()
  * @param drive_sys the drive train that will allow us to apply pressure on the rollers
  * @param roller_motor The motor that will spin the roller
  */
-SpinRollerCommandAUTO::SpinRollerCommandAUTO(TankDrive &drive_sys, vex::motor &roller_motor) : drive_sys(drive_sys), roller_motor(roller_motor) {}
+SpinRollerCommandAUTO::SpinRollerCommandAUTO(TankDrive &drive_sys, vision &cam, position_t &align_pos) 
+: drive_sys(drive_sys), cam(cam), align_pos(align_pos) {}
 
 /**
  * Run roller controller to spin the roller to our color
@@ -49,38 +50,17 @@ SpinRollerCommandAUTO::SpinRollerCommandAUTO(TankDrive &drive_sys, vex::motor &r
  */
 bool SpinRollerCommandAUTO::run()
 {
-  const double roller_cutoff_threshold = .05;      // revolutions // [measure]
-  const double num_revolutions_to_spin_motor = -2; // revolutions // [measure]
-  const double drive_power = .2;                   // [measure]
-
-  // Initialize start and end position if not already
-  if (!func_initialized)
+  static bool check_pos = true;
+  
+  if(check_pos)
   {
-    start_pos = roller_motor.position(vex::rev);
-    target_pos = start_pos + num_revolutions_to_spin_motor;
-    func_initialized = true;
+    // Vision Stuff
+    
+    
   }
 
-  // Calculate error
-  double current_pos = roller_motor.position(vex::rev);
-  double error = target_pos - current_pos;
 
-  // If we're close enough, call it here.
-  if (fabs(error) > roller_cutoff_threshold < roller_cutoff_threshold)
-  {
-    func_initialized = false;
-    roller_motor.stop();
-    return true;
-  }
-
-  vex::directionType dir = fwd;
-  if (error < 0)
-  {
-    dir = reverse;
-  }
-  // otherwise, do a P controller
-  roller_motor.spin(dir, 8, vex::volt);
-  drive_sys.drive_tank(drive_power, drive_power);
+  
   return false;
 }
 
@@ -416,4 +396,32 @@ bool WallAlignCommand::run()
   }
   odom.set_position(newpos);
   return true;
+}
+
+#define ROLLER_AREA_CUTOFF 1000
+
+Pepsi scan_roller()
+{
+  // SCAN FOR RED
+  cam.takeSnapshot(RED_GOAL);
+  vex::vision::object red_obj = cam.largestObject;
+  int red_area = red_obj.width * red_obj.height;
+  int red_y = red_obj.centerY;
+
+  if(cam.objectCount < 1 || red_area < ROLLER_AREA_CUTOFF)
+      return NEUTRAL;
+  
+  // SCAN FOR BLUE
+  cam.takeSnapshot(BLUE_GOAL);
+  vex::vision::object blue_obj = cam.largestObject;
+  int blue_area = blue_obj.width * blue_obj.height;
+  int blue_y = blue_obj.centerY;
+
+  if(cam.objectCount < 1 || blue_area < ROLLER_AREA_CUTOFF)
+      return NEUTRAL;
+  
+  if(red_y > blue_y)
+      return RED;
+  else
+      return BLUE;
 }

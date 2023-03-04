@@ -20,7 +20,7 @@ public:
    * @param drive_sys the drivetrain tha will let us apply pressure to spin the roller
    * @param roller_motor The motor that will spin the roller
    */
-  SpinRollerCommandAUTO(TankDrive &drive_sys, vex::motor &roller_motor);
+  SpinRollerCommandAUTO(TankDrive &drive_sys, vision &cam, position_t &align_pos);
 
   /**
    * Run roller controller to spin the roller to our color
@@ -31,10 +31,9 @@ public:
 
 private:
   TankDrive &drive_sys;
-  vex::motor &roller_motor;
+  vision &cam;
   bool func_initialized;
-  double start_pos;
-  double target_pos;
+  position_t &align_pos;
 };
 /**
  * SpinRollerCommand is an ACS command that tells the robot spin the roller to the team color
@@ -316,3 +315,11 @@ private:
   vex::timer tmr;
   bool func_initialized;
 };
+
+enum Pepsi
+{
+    RED, BLUE, NEUTRAL
+};
+
+Pepsi scan_roller();
+

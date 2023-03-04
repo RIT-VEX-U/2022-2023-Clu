@@ -16,14 +16,10 @@ extern motor intake, roller, flywheel;
 extern motor_group left_motors, right_motors;
 extern motor_group flywheel_motors;
 
-extern std::map<std::string, motor &> motor_names;
+extern digital_out endgame_solenoid;
+extern digital_out flapdown_solenoid;
+extern digital_out flapup_solenoid;
 
-extern vex::pot selector_pot;
-
-
-extern vex::digital_out endgame_solenoid;
-
-extern vex::digital_out flapdown_solenoid;
 extern vex::digital_out flapup_solenoid;
 
 // ======== INPUTS ========
@@ -31,6 +27,8 @@ extern CustomEncoder left_enc, right_enc, mid_enc;
 extern inertial imu;
 
 extern vex::optical colorSensor;
+
+extern vex::analog_in mode_switch;
 
 // ======== UTILS ========
 // Drive Tuning
@@ -63,9 +61,17 @@ extern std::string AutoNonLoaderSideDisplayName;
 extern std::string SkillsLoaderSideDisplayName;
 extern std::string SkillsNonLoaderSideDisplayName;
 
+enum RobotMode
+{
+    INIT,AUTOSKILLS,COMP,TEST1,TEST2
+};
+
+extern RobotMode curr_mode;
+
+void select_mode();
+
 extern bool target_red;
 extern bool vision_enabled;
-
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
