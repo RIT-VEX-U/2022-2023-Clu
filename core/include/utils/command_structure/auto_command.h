@@ -21,7 +21,11 @@ class AutoCommand {
     */
     virtual void on_timeout(){}
     AutoCommand* withTimeout(double t_seconds){
+<<<<<<< HEAD
+      this->timeout_seconds = t_seconds;
+=======
       timeout_seconds = t_seconds;
+>>>>>>> refs/subrepo/core/fetch
       return this;
     }
     /** 
@@ -33,6 +37,6 @@ class AutoCommand {
      * - a command that waits until something is up to speed that never gets up to speed because of battery voltage
      * - something else...
     */
-    double timeout_seconds;
+    double timeout_seconds = 10.0;
 
 };
