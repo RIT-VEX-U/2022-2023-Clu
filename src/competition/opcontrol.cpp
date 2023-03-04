@@ -78,45 +78,45 @@ void opcontrol()
   static std::atomic<double> cur_flywheel_rpm(FLYWHEEL_NORMAL);
 
   // Intake - R1
-  main_controller.ButtonR1.pressed([]()
-                                   { intake.spin(reverse, 12, volt); });
-  main_controller.ButtonR1.released([]()
-                                    { intake.stop(); });
+  main_controller.ButtonR1.pressed([](){ intake.spin(reverse, 12, volt); });
+  main_controller.ButtonR1.released([](){ intake.stop(); });
 
   // Shoot - R2
-  main_controller.ButtonR2.pressed([]()
-                                   { intake.spin(fwd, cur_intake_volt, volt); });
-  main_controller.ButtonR2.released([]()
-                                    { intake.stop(); });
+  main_controller.ButtonR2.pressed([](){ intake.spin(fwd, cur_intake_volt, volt); });
+  main_controller.ButtonR2.released([](){ intake.stop(); });
 
   // Flap - Y
   main_controller.ButtonY.pressed([]()
-                                  {
+  {
     static bool flapUp = false;
     flapUp = !flapUp;
-    flapup_solenoid.set(flapUp); });
+    flapup_solenoid.set(flapUp); 
+  });
 
   // Single Shot - L2
   main_controller.ButtonL2.pressed([]()
-                                   {
+  {
     intake.spin(fwd, 9.5, volt);
     vexDelay(SHOTLENGTH);
     intake.stop();
-    vexDelay(DELAYLENGTH); });
+    vexDelay(DELAYLENGTH); 
+  });
 
   main_controller.ButtonLeft.pressed([]()
-                                     {
+  {
     cur_intake_volt = INTAKE_OVERFILL;
     cur_flywheel_rpm = FLYWHEEL_OVERFILL;
 
-    flywheel_sys.spinRPM(cur_flywheel_rpm); });
+    flywheel_sys.spinRPM(cur_flywheel_rpm); 
+  });
 
   main_controller.ButtonRight.pressed([]()
-                                      {
+  {
     cur_intake_volt = INTAKE_NORMAL;
     cur_flywheel_rpm = FLYWHEEL_NORMAL;
 
-    flywheel_sys.spinRPM(cur_flywheel_rpm); });
+    flywheel_sys.spinRPM(cur_flywheel_rpm); 
+  });
 
   // Flywheel set RPM
   flywheel_sys.spinRPM(cur_flywheel_rpm);
