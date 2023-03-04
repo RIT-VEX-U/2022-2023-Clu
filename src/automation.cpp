@@ -397,3 +397,31 @@ bool WallAlignCommand::run()
   odom.set_position(newpos);
   return true;
 }
+
+#define ROLLER_AREA_CUTOFF 1000
+
+Pepsi scan_roller()
+{
+  // SCAN FOR RED
+  cam.takeSnapshot(RED_GOAL);
+  vex::vision::object red_obj = cam.largestObject;
+  int red_area = red_obj.width * red_obj.height;
+  int red_y = red_obj.centerY;
+
+  if(cam.objectCount < 1 || red_area < ROLLER_AREA_CUTOFF)
+      return NEUTRAL;
+  
+  // SCAN FOR BLUE
+  cam.takeSnapshot(BLUE_GOAL);
+  vex::vision::object blue_obj = cam.largestObject;
+  int blue_area = blue_obj.width * blue_obj.height;
+  int blue_y = blue_obj.centerY;
+
+  if(cam.objectCount < 1 || blue_area < ROLLER_AREA_CUTOFF)
+      return NEUTRAL;
+  
+  if(red_y > blue_y)
+      return RED;
+  else
+      return BLUE;
+}

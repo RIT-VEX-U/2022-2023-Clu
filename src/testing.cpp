@@ -67,6 +67,8 @@ void programmers_opcontrol()
     // else
     // {
     drive_sys.drive_arcade(main_controller.Axis3.position() / 200.0, main_controller.Axis1.position() / 200.0);
+    Pepsi rol = scan_roller();
+    printf("roller: %s", rol==RED?"red":rol==BLUE?"blue":"neutral");
     printf("X: %2f, Y: %2f, R: %2f\n", pos.x, pos.y, pos.rot);
     // }
 

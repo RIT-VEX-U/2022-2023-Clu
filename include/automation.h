@@ -315,3 +315,11 @@ private:
   vex::timer tmr;
   bool func_initialized;
 };
+
+enum Pepsi
+{
+    RED, BLUE, NEUTRAL
+};
+
+Pepsi scan_roller();
+
