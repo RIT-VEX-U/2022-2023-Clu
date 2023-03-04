@@ -1,6 +1,8 @@
 #pragma once
 #include "vex.h"
 #include "core.h"
+#include "../core/include/subsystems/screen.h"
+#include "competition/comp_screen.h"
 
 using namespace vex;
 
@@ -15,6 +17,8 @@ extern motor_group left_motors, right_motors;
 extern motor_group flywheel_motors;
 
 extern std::map<std::string, motor &> motor_names;
+
+extern vex::pot selector_pot;
 
 
 extern vex::digital_out endgame_solenoid;
@@ -58,6 +62,10 @@ extern std::string AutoLoaderSideDisplayName;
 extern std::string AutoNonLoaderSideDisplayName;
 extern std::string SkillsLoaderSideDisplayName;
 extern std::string SkillsNonLoaderSideDisplayName;
+
+extern bool target_red;
+extern bool vision_enabled;
+
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.

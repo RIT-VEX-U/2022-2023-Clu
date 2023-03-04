@@ -5,16 +5,18 @@
 #include "tuning.h"
 #include "vision.h"
 #include <stdio.h>
-//#include "../core/include/intense_milk.h"
 
-int print_odom(){
-    while(true){
-        position_t pos = odometry_sys.get_position();
-        printf("%.2f, %.2f, %.2f\n", pos.x, pos.y, pos.rot);
-        vexDelay(20);
-    }
-    return 0;
+int print_odom()
+{
+  while (true)
+  {
+    position_t pos = odometry_sys.get_position();
+    printf("%.2f, %.2f, %.2f\n", pos.x, pos.y, pos.rot);
+    vexDelay(100);
+  }
+  return 0;
 }
+
 
 /**
  * Contains the main loop of the robot code while running in the driver-control period.
@@ -29,38 +31,44 @@ void opcontrol()
   endgame_solenoid.set(false);
   flapup_solenoid.set(false);
 
-  
   // Initialization
-  double oneshot_time = .05;//Change 1 second to whatever is needed
+  double oneshot_time = .05; // Change 1 second to whatever is needed
   bool oneshotting = false;
   flywheel_sys.spinRPM(3200);
-  
-  main_controller.ButtonUp.pressed([](){flywheel_sys.spinRPM(3400);});
-  main_controller.ButtonLeft.pressed([](){flywheel_sys.spinRPM(3100);});
-  main_controller.ButtonRight.pressed([](){flywheel_sys.spinRPM(3200);});
 
+  main_controller.ButtonUp.pressed([]()
+                                   { flywheel_sys.spinRPM(3400); });
+  main_controller.ButtonLeft.pressed([]()
+                                     { flywheel_sys.spinRPM(3100); });
+  main_controller.ButtonRight.pressed([]()
+                                      { flywheel_sys.spinRPM(3200); });
 
-  main_controller.ButtonDown.pressed([](){flywheel_sys.stop();});
-  
-  main_controller.ButtonR1.pressed([](){intake.spin(reverse, 12, volt);}); // Intake
-  main_controller.ButtonR2.pressed([](){intake.spin(fwd, 9.5, volt);}); // Shoot
+  main_controller.ButtonDown.pressed([]()
+                                     { flywheel_sys.stop(); });
 
-  main_controller.ButtonL1.pressed([](){flapup_solenoid.set(false);});// Flapup
-  main_controller.ButtonL2.pressed([](){flapup_solenoid.set(true);}); // Flaodown
-  
-  main_controller.ButtonB.pressed([](){odometry_sys.set_position();});
+  main_controller.ButtonR1.pressed([]()
+                                   { intake.spin(reverse, 12, volt); }); // Intake
+  main_controller.ButtonR2.pressed([]()
+                                   { intake.spin(fwd, 9.5, volt); }); // Shoot
 
-  odometry_sys.end_async();
+  main_controller.ButtonL1.pressed([]()
+                                   { flapup_solenoid.set(false); }); // Flapup
+  main_controller.ButtonL2.pressed([]()
+                                   { flapup_solenoid.set(true); }); // Flaodown
+
+  main_controller.ButtonB.pressed([]()
+                                  { odometry_sys.set_position(); });
+
+  // odometry_sys.end_async();
 
   // Periodic
-  while(true)
+  while (true)
   {
     // ========== DRIVING CONTROLS ==========
-    drive_sys.drive_tank(main_controller.Axis3.position()/100.0,main_controller.Axis2.position() / 100.0);
+    drive_sys.drive_tank(main_controller.Axis3.position() / 100.0, main_controller.Axis2.position() / 100.0);
     // ========== MANIPULATING CONTROLS ==========
 
-
-    if(main_controller.ButtonY.pressing() && main_controller.ButtonRight.pressing())
+    if (main_controller.ButtonY.pressing() && main_controller.ButtonRight.pressing())
     {
       endgame_solenoid.set(true);
     }
@@ -73,7 +81,7 @@ void opcontrol()
 
     // ========== SECONDARY REMOTE ==========
 
-    // ========== AUTOMATION ==========    
+    // ========== AUTOMATION ==========
 
     vexDelay(0);
   }
