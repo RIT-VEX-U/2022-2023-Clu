@@ -1,6 +1,9 @@
 #pragma once
 #include "vex.h"
 #include "core.h"
+#include "../core/include/subsystems/screen.h"
+#include "competition/comp_screen.h"
+#include <map>
 
 using namespace vex;
 
@@ -13,6 +16,9 @@ extern motor right_front, right_mid, right_rear;
 extern motor intake, roller, flywheel;
 extern motor_group left_motors, right_motors;
 extern motor_group flywheel_motors;
+
+
+extern std::map<string, motor&> motor_names;
 
 extern digital_out endgame_solenoid;
 extern digital_out flapdown_solenoid;
@@ -30,6 +36,9 @@ extern vex::analog_in mode_switch;
 
 // ======== UTILS ========
 // Drive Tuning
+
+
+
 
 
 extern PID::pid_config_t drive_pid_cfg, turn_pid_cfg;

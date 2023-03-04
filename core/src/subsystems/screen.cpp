@@ -87,10 +87,6 @@ void draw_mot_stats(vex::brain::lcd &screen, int x, int y, int width, const char
         {
             bg_col = not_plugged_in_col;
         }
-        else
-        {
-            bg_col = bg_col;
-        }
     }
 
     vex::color border_col = vex::white;
@@ -110,10 +106,10 @@ void draw_mot_stats(vex::brain::lcd &screen, int x, int y, int width, const char
 
     // PORT
     screen.drawLine(x + name_width + 50, y, x + name_width + 50, y + 20);
-    char *warning = "!";
+    char warning[] = "!";
     if (pluggedin)
     {
-        warning = "";
+        *warning = ' ';
     }
     screen.printAt(x + name_width + 60, y + 15, "%d%s", port, warning);
     count++;

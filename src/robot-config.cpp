@@ -22,6 +22,21 @@ motor roller(PORT4);
 
 motor_group flywheel_motors(flywheel);
 
+std::map<std::string, motor &> motor_names{
+    {"left front", left_front},
+    {"left mid", left_mid},
+    {"left rear", left_rear},
+
+    {"right front", right_front},
+    {"right mid", right_mid},
+    {"right rear", right_rear},
+
+    {"flywheel", flywheel},
+    {"intake", intake},
+
+};
+
+
 // Other Outputs
 digital_out endgame_solenoid(Brain.ThreeWirePort.H);
 digital_out flapup_solenoid(Brain.ThreeWirePort.G);
