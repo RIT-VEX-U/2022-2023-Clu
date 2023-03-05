@@ -23,6 +23,7 @@
 // turn commands
 #define TURN_TO_HEADING(dir) (new TurnToHeadingCommand(drive_sys, *config.turn_feedback, dir, TURN_SPEED))
 #define TURN_DEGREES(dir) (new TurnDegreesCommand(drive_sys, *config.turn_feedback, dir, TURN_SPEED))
+#define TURN_TO_POINT(x, y) (new TurnToPointCommand(drive_sys, odometry_sys, *config.turn_feedback, x, y))
 
 // shooting commands
 #define AUTO_AIM (new VisionAimCommand())
@@ -74,38 +75,45 @@ CommandController auto_non_loader_side(){
     CommandController nlsa;
 
     // Initialization
-    position_t start_pos = {.x=105.75, .y=86.5, .rot=90}; 
+    position_t start_pos = {.x=132, .y=86.5, .rot=90}; 
     nlsa.add(new OdomSetPosition(odometry_sys, start_pos));
     nlsa.add(new SpinRPMCommand(flywheel_sys, 3400)); // 3400 old
     nlsa.add(new FlapDownCommand());
 
     // Drive to roller
     // /* REMOVE ME */ nlsa.add(DRIVE_TO_POINT_FAST(94, 94, fwd)); // TEMP SKIP ROLLER
-    nlsa.add(DRIVE_TO_POINT_FAST(101, 105, fwd));
+    nlsa.add(DRIVE_TO_POINT_FAST(127.25, 105, fwd));
     nlsa.add(TURN_TO_HEADING(5));
     
     // Spin Roller
-    nlsa.add(DRIVE_TO_POINT_FAST(115,106, fwd), 1);
-    nlsa.add(DRIVE_TO_POINT_FAST(101.3, 105, rev));
-    nlsa.add(DRIVE_TO_POINT_FAST(115,106, fwd), 1);
-    
-    // Drive to intake 1.3
-    nlsa.add(DRIVE_TO_POINT_FAST(94, 94, rev));
-    nlsa.add(TURN_TO_HEADING(222));
+    nlsa.add(DRIVE_TO_POINT_FAST(141.25,106, fwd), 1);
+    nlsa.add(DRIVE_TO_POINT_FAST(127.55, 105, rev));
+    nlsa.add(DRIVE_TO_POINT_FAST(141.25,106, fwd), 1);
 
-    // Intake 1.3
+    //Drive to center disk
+    nlsa.add(TURN_TO_HEADING(270));
+    nlsa.add(DRIVE_TO_POINT_FAST(120, 72, fwd));
+    nlsa.add(TURN_TO_HEADING(180));
     nlsa.add(new StartIntakeCommand(intake, INTAKE_VOLT));
-    nlsa.add(DRIVE_TO_POINT_SLOW(79, 80, fwd));
+    nlsa.add(DRIVE_TO_POINT_SLOW(96, 72, fwd));
+    
+    // // Drive to intake 1.3
+    // nlsa.add(DRIVE_TO_POINT_FAST(94, 94, rev));
+    // nlsa.add(TURN_TO_HEADING(222));
+
+    // // Intake 1.3
+    // nlsa.add(new StartIntakeCommand(intake, INTAKE_VOLT));
+    // nlsa.add(DRIVE_TO_POINT_SLOW(79, 80, fwd));
     nlsa.add(new StopIntakeCommand(intake));
 
-    // Push disk forward then back up
-    nlsa.add_delay(250);
-    nlsa.add(DRIVE_TO_POINT_FAST(64.9, 66.1, fwd));
-    nlsa.add(DRIVE_TO_POINT_FAST(66.8, 68, rev));
+    // // Push disk forward then back up
+    // nlsa.add_delay(250);
+    // nlsa.add(DRIVE_TO_POINT_FAST(64.9, 66.1, fwd));
+    // nlsa.add(DRIVE_TO_POINT_FAST(66.8, 68, rev));
     
-    // Drive to shoot
-    nlsa.add(TURN_TO_HEADING(145));
-    nlsa.add(DRIVE_TO_POINT_FAST(60, 72.4, fwd));
+    // // Drive to shoot
+    // nlsa.add(TURN_TO_HEADING(145));
+    // nlsa.add(DRIVE_TO_POINT_FAST(60, 72.4, fwd));
     
     // Shoot!
     nlsa.add(TURN_TO_HEADING(145));
@@ -116,56 +124,70 @@ CommandController auto_non_loader_side(){
 
     nlsa.add_delay(4000);
 
-    // Intake 2 disk 1-2
-    nlsa.add(TURN_TO_HEADING(251));
     nlsa.add(new StartIntakeCommand(intake, INTAKE_VOLT));
-    nlsa.add(DRIVE_TO_POINT_SLOW(59, 65, fwd));
-    nlsa.add(DRIVE_TO_POINT_SLOW(55, 59, fwd));
-
-    // Turn around and shoot
-    nlsa.add(DRIVE_TO_POINT_FAST(59.5, 70, rev));
-    nlsa.add(TURN_TO_HEADING(143));
+    nlsa.add(TURN_TO_HEADING(45));
+    nlsa.add(DRIVE_TO_POINT_SLOW(108,84, fwd));
+    nlsa.add(TURN_TO_HEADING(225));
+    nlsa.add(DRIVE_TO_POINT_SLOW(84,56, fwd));
+    nlsa.add(TURN_TO_POINT(18,126));
     nlsa.add(new StopIntakeCommand(intake));
 
     add_single_shot_cmd(nlsa, 1);
     add_single_shot_cmd(nlsa, 1);
-    add_single_shot_cmd(nlsa, 1);
 
-    // Drive to Intake 3
-    nlsa.add(DRIVE_TO_POINT_FAST(82, 68, rev));
-    nlsa.add(TURN_TO_HEADING(266));
 
-    //Intake 3.1
-    nlsa.add(new StartIntakeCommand(intake, INTAKE_VOLT));
-    nlsa.add(DRIVE_TO_POINT_SLOW(82, 58, fwd), 2);
-    nlsa.add(DRIVE_TO_POINT_FAST(82, 68, rev));
+//IGNORE FOLLOWING CODE FOR NOW
 
-    // Intake 3.2
-    nlsa.add(DRIVE_TO_POINT_SLOW(86.9, 57.5, fwd), 2);
-    nlsa.add(DRIVE_TO_POINT_FAST(78.6, 68.4, rev));
+    // // Intake 2 disk 1-2
+    // nlsa.add(TURN_TO_HEADING(251));
+    // nlsa.add(new StartIntakeCommand(intake, INTAKE_VOLT));
+    // nlsa.add(DRIVE_TO_POINT_SLOW(59, 65, fwd));
+    // nlsa.add(DRIVE_TO_POINT_SLOW(55, 59, fwd));
+
+    // // Turn around and shoot
+    // nlsa.add(DRIVE_TO_POINT_FAST(59.5, 70, rev));
+    // nlsa.add(TURN_TO_HEADING(143));
+    // nlsa.add(new StopIntakeCommand(intake));
+
+    // add_single_shot_cmd(nlsa, 1);
+    // add_single_shot_cmd(nlsa, 1);
+    // add_single_shot_cmd(nlsa, 1);
+
+    // // Drive to Intake 3
+    // nlsa.add(DRIVE_TO_POINT_FAST(82, 68, rev));
+    // nlsa.add(TURN_TO_HEADING(266));
+
+    // //Intake 3.1
+    // nlsa.add(new StartIntakeCommand(intake, INTAKE_VOLT));
+    // nlsa.add(DRIVE_TO_POINT_SLOW(82, 58, fwd), 2);
+    // nlsa.add(DRIVE_TO_POINT_FAST(82, 68, rev));
+
+    // // Intake 3.2
+    // nlsa.add(DRIVE_TO_POINT_SLOW(86.9, 57.5, fwd), 2);
+    // nlsa.add(DRIVE_TO_POINT_FAST(78.6, 68.4, rev));
     
 
-    //Intake 3.3
-    nlsa.add(TURN_TO_HEADING(238));
-    nlsa.add(DRIVE_TO_POINT_SLOW(72.7, 58.5, fwd), 2);
+    // //Intake 3.3
+    // nlsa.add(TURN_TO_HEADING(238));
+    // nlsa.add(DRIVE_TO_POINT_SLOW(72.7, 58.5, fwd), 2);
 
-    // Drive to shoot 3
-    nlsa.add(TURN_TO_HEADING(158));
-    nlsa.add(DRIVE_TO_POINT_FAST(56.5,69.9,fwd));
-    nlsa.add(new StopIntakeCommand(intake));
+    // // Drive to shoot 3
+    // nlsa.add(TURN_TO_HEADING(158));
+    // nlsa.add(DRIVE_TO_POINT_FAST(56.5,69.9,fwd));
+    // nlsa.add(new StopIntakeCommand(intake));
 
-    // Shoot 3
-    nlsa.add(TURN_TO_HEADING(142));
-    add_single_shot_cmd(nlsa, 1);
-    add_single_shot_cmd(nlsa, 1);
-    add_single_shot_cmd(nlsa, 1);
+    // // Shoot 3
+    // nlsa.add(TURN_TO_HEADING(142));
+    // add_single_shot_cmd(nlsa, 1);
+    // add_single_shot_cmd(nlsa, 1);
+    // add_single_shot_cmd(nlsa, 1);
 
-    nlsa.add(new FlywheelStopCommand(flywheel_sys));
+    // nlsa.add(new FlywheelStopCommand(flywheel_sys));
 
-    // Drive to 3stack for driver
-    nlsa.add(TURN_TO_HEADING(50));
-    nlsa.add(DRIVE_TO_POINT_FAST(90, 100, fwd));
-    nlsa.add(TURN_TO_HEADING(136));
+    // // Drive to 3stack for driver
+    // nlsa.add(TURN_TO_HEADING(50));
+    // nlsa.add(DRIVE_TO_POINT_FAST(90, 100, fwd));
+    // nlsa.add(TURN_TO_HEADING(136));
 
     return nlsa;
     

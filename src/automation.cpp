@@ -317,7 +317,7 @@ bool VisionAimCommand::run()
  * @param drive_sys Reference to the TankDrive system
  * @param point The point we want to turn towards
  */
-TurnToPointCommand::TurnToPointCommand(TankDrive &drive_sys, OdometryTank &odom, Feedback &turn_feedback, Vector2D::point_t point) : drive_sys(drive_sys), odom(odom), feedback(turn_feedback), point(point) {}
+TurnToPointCommand::TurnToPointCommand(TankDrive &drive_sys, OdometryTank &odom, Feedback &turn_feedback, double x, double y) : drive_sys(drive_sys), odom(odom), feedback(turn_feedback), x(x), y(y) {}
 
 /**
  * Run the TurnToPointCommand
@@ -327,8 +327,8 @@ TurnToPointCommand::TurnToPointCommand(TankDrive &drive_sys, OdometryTank &odom,
 bool TurnToPointCommand::run()
 {
   // get differences in x and y to calculate angle relative to x axis
-  double delta_x = point.x - odom.get_position().x;
-  double delta_y = point.y - odom.get_position().y;
+  double delta_x = x - odom.get_position().x;
+  double delta_y = y - odom.get_position().y;
 
   // get the angle
   double heading_deg = rad2deg(atan2(delta_y, delta_x));

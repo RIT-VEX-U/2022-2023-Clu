@@ -252,7 +252,7 @@ public:
   /**
    * COnstruct the command
    */
-  TurnToPointCommand(TankDrive &drive_sys, OdometryTank &odom, Feedback &feedback, Vector2D::point_t point);
+  TurnToPointCommand(TankDrive &drive_sys, OdometryTank &odom, Feedback &feedback, double x, double y);
 
   bool run() override;
 
@@ -260,7 +260,8 @@ private:
   TankDrive &drive_sys;
   OdometryTank &odom;
   Feedback &feedback;
-  Vector2D::point_t point;
+  double x;
+  double y;
 };
 
 class FunctionCommand : public AutoCommand
