@@ -40,26 +40,37 @@ bool FlapDownCommand::run()
  * @param drive_sys the drive train that will allow us to apply pressure on the rollers
  * @param roller_motor The motor that will spin the roller
  */
-SpinRollerCommandAUTO::SpinRollerCommandAUTO(TankDrive &drive_sys, vision &cam, position_t &align_pos) 
-: drive_sys(drive_sys), cam(cam), align_pos(align_pos) {}
+SpinRollerCommand::SpinRollerCommand(position_t &align_pos): align_pos(align_pos) {}
 
 /**
  * Run roller controller to spin the roller to our color
  * Overrides run from AutoCommand
  * @returns true when execution is complete, false otherwise
  */
-bool SpinRollerCommandAUTO::run()
+bool SpinRollerCommand::run()
 {
-  static bool check_pos = true;
-  
   if(check_pos)
   {
-    // Vision Stuff
-    
-    
+    Pepsi cur_roller = scan_roller();
+    if((cur_roller == RED && target_red)
+      || cur_roller == BLUE && !target_red)
+    {
+      drive_sys.stop();
+      return true; 
+    }
+
+    check_pos = false;    
   }
 
+  CommandController cmd;
+  cmd.add({
+     (new DriveForwardCommand(drive_sys, drive_fast_mprofile, 12, directionType::fwd))->withTimeout(1),
+     (new DelayCommand(100)),
+     (new OdomSetPosition(odometry_sys, align_pos)),
+     (new DriveForwardCommand(drive_sys, drive_fast_mprofile, 6, directionType::rev))
+  });
 
+  cmd.run();
   
   return false;
 }
@@ -402,6 +413,12 @@ bool WallAlignCommand::run()
 
 Pepsi scan_roller()
 {
+  if(!cam.installed())
+  {
+    printf("Cam Disconnected!\n");
+    return NEUTRAL;
+  }
+
   // SCAN FOR RED
   cam.takeSnapshot(RED_GOAL);
   vex::vision::object red_obj = cam.largestObject;

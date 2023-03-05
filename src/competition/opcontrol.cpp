@@ -44,7 +44,7 @@ void tripleshot()
 
 void opcontrol()
 {
-  // test1_opcontrol();
+  test1_opcontrol();
   // programmers_opcontrol();
   // select_mode();
   // printf("angle: %d mode: %d\n",mode_switch.value(pct), curr_mode);
@@ -125,30 +125,12 @@ void opcontrol()
   flap_up();
   timer tmr;
 
-  GraphDrawer setpt_graph(Brain.Screen, 30, "RPM", "Time", vex::red, true, 0, 4000);
-  GraphDrawer rpm_graph(Brain.Screen, 30, "RPM", "Time", vex::red, true, 0, 4000);
-
   VisionAimCommand visaim;
   int i = 0;
   double time = 0.0;
   // Periodic
   while (true)
   {
-    // print_to_screen();
-    i++;
-    if (i % 5 == 0)
-    {
-      main_controller.Screen.setCursor(0, 0);
-      main_controller.Screen.clearScreen();
-      main_controller.Screen.print("fw rpm: %f", flywheel_sys.getRPM());
-      main_controller.Screen.setCursor(2, 0);
-      main_controller.Screen.print("fw temp: %.1ff", flywheel.temperature(vex::fahrenheit));
-      main_controller.Screen.setCursor(4, 0);
-      main_controller.Screen.print("bat fw : %.2fv %.2fv", Brain.Battery.voltage(vex::volt), flywheel.voltage(volt));
-    }
-    time += 0.02;
-    setpt_graph.add_sample(Vector2D::point_t{.x = time, .y = flywheel_sys.getDesiredRPM()});
-    rpm_graph.add_sample(Vector2D::point_t{.x = time, .y = flywheel_sys.getRPM()});
 
     // ========== DRIVING CONTROLS ==========
     if (!main_controller.ButtonX.pressing())

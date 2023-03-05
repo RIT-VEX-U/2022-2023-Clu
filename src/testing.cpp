@@ -8,8 +8,12 @@ void test1_opcontrol()
 {
     // Test1: Match Auto Testing
     while(imu.isCalibrating()){}
-    auto_non_loader_side().run();
+    // auto_non_loader_side().run();
     // prog_skills_non_loader_side().run();
+    
+    CommandController cmd;
+    cmd.add(new SpinRollerCommand(position_t{.x=0,.y=0,.rot=90}));
+    cmd.run();
     
     programmers_opcontrol();
 }
@@ -68,8 +72,8 @@ void programmers_opcontrol()
     // {
     drive_sys.drive_arcade(main_controller.Axis3.position() / 200.0, main_controller.Axis1.position() / 200.0);
     Pepsi rol = scan_roller();
-    printf("roller: %s", rol==RED?"red":rol==BLUE?"blue":"neutral");
-    printf("X: %2f, Y: %2f, R: %2f\n", pos.x, pos.y, pos.rot);
+    printf("roller: %s\n", rol==RED?"red":rol==BLUE?"blue":"neutral");
+    // printf("X: %2f, Y: %2f, R: %2f\n", pos.x, pos.y, pos.rot);
     // }
 
     // Flap Controls
