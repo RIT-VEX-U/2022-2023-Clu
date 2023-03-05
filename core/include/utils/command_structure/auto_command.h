@@ -20,6 +20,7 @@ class AutoCommand {
      * What to do if we timeout instead of finishing. timeout is specified by the timeout seconds in the constructor
     */
     virtual void on_timeout(){}
+    
     AutoCommand* withTimeout(double t_seconds){
       timeout_seconds = t_seconds;
       return this;
@@ -33,6 +34,6 @@ class AutoCommand {
      * - a command that waits until something is up to speed that never gets up to speed because of battery voltage
      * - something else...
     */
-    double timeout_seconds;
+    double timeout_seconds = 10.0;
 
 };

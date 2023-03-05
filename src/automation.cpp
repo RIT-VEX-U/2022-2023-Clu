@@ -40,7 +40,7 @@ bool FlapDownCommand::run()
  * @param drive_sys the drive train that will allow us to apply pressure on the rollers
  * @param roller_motor The motor that will spin the roller
  */
-SpinRollerCommand::SpinRollerCommand(position_t &align_pos): align_pos(align_pos) {}
+SpinRollerCommand::SpinRollerCommand(position_t align_pos): align_pos(align_pos) {}
 
 /**
  * Run roller controller to spin the roller to our color

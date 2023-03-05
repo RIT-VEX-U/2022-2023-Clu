@@ -20,7 +20,7 @@ public:
    * @param drive_sys the drivetrain tha will let us apply pressure to spin the roller
    * @param roller_motor The motor that will spin the roller
    */
-  SpinRollerCommand(position_t &align_pos);
+  SpinRollerCommand(position_t align_pos);
 
   /**
    * Run roller controller to spin the roller to our color

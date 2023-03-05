@@ -20,12 +20,14 @@ void test1_opcontrol()
 
 void test2_opcontrol()
 {
-    programmers_opcontrol();
+  programmers_opcontrol();
 }
 
 void tuning_opcontrol()
 {
-  while(imu.isCalibrating()){}
+  while (imu.isCalibrating())
+  {
+  }
   // tune_odometry_wheel_diam();
   // tune_odometry_wheelbase();
   // tune_flywheel_ff();
@@ -34,7 +36,7 @@ void tuning_opcontrol()
   // tune_drive_motion_maxv(TURN);
   // tune_drive_motion_accel(TURN, 700);
   // tune_drive_pid(TURN);
-  
+
   // auto pos = odometry_sys.get_position();
   // main_controller.Screen.clearScreen();
   // main_controller.Screen.setCursor(0, 0);
@@ -47,24 +49,22 @@ void tuning_opcontrol()
 
   // if(main_controller.ButtonX.pressing())
   //   drive_sys.drive_tank(.11, -.11);
-
-  
 }
 
 void programmers_opcontrol()
 {
   flywheel_sys.stop();
   intake.stop();
-  
+
   // flywheel_sys.spinRPM(3800);
   VisionAimCommand visaim(false);
   position_t pos;
   main_controller.Screen.clearScreen();
-  while(true)
+  while (true)
   {
     // Odometry Info
     pos = odometry_sys.get_position();
-    
+
     // Vision Aim Tuning
     // if(main_controller.ButtonA.pressing())
     //   visaim.run();
@@ -79,17 +79,18 @@ void programmers_opcontrol()
     // Flap Controls
     static bool flap_is_up = false;
     static bool buttonX_newpress = true;
-    if(buttonX_newpress && main_controller.ButtonX.pressing())
+    if (buttonX_newpress && main_controller.ButtonX.pressing())
     {
       flap_is_up = !flap_is_up;
 
-      if(flap_is_up)
+      if (flap_is_up)
         flap_up();
       else
         flap_down();
 
       buttonX_newpress = false;
-    }else if (!main_controller.ButtonX.pressing())
+    }
+    else if (!main_controller.ButtonX.pressing())
     {
       buttonX_newpress = true;
     }
@@ -98,46 +99,41 @@ void programmers_opcontrol()
     static bool intake_btn_pressing = false;
     static double intake_speed = 9.5;
 
-    if(!intake_btn_pressing)
+    if (!intake_btn_pressing)
     {
-      if(main_controller.ButtonA.pressing())
+      if (main_controller.ButtonA.pressing())
         intake_speed += .5;
-      else if(main_controller.ButtonY.pressing())
+      else if (main_controller.ButtonY.pressing())
         intake_speed -= .5;
     }
 
-    intake_btn_pressing = main_controller.ButtonA.pressing() 
-    ||  main_controller.ButtonY.pressing();
-    
-    if(main_controller.ButtonR2.pressing())
+    intake_btn_pressing = main_controller.ButtonA.pressing() || main_controller.ButtonY.pressing();
+
+    if (main_controller.ButtonR2.pressing())
       intake.spin(directionType::fwd, intake_speed, volt);
-    else if(main_controller.ButtonR1.pressing())
+    else if (main_controller.ButtonR1.pressing())
       intake.spin(directionType::rev, 12, volt);
     else
       intake.stop();
 
-    
     // Flywheel Speed Control
     static bool flywheel_btn_pressing = false;
     static int flywheel_setpt;
-    if(!flywheel_btn_pressing)
-      if(main_controller.ButtonRight.pressing())
+    if (!flywheel_btn_pressing){
+      if (main_controller.ButtonRight.pressing())
         flywheel_setpt += 50;
       else if (main_controller.ButtonLeft.pressing())
         flywheel_setpt -= 50;
-      else if(main_controller.ButtonDown.pressing())
+      else if (main_controller.ButtonDown.pressing())
         flywheel_setpt = 0;
-      else if(main_controller.ButtonUp.pressing())
+      else if (main_controller.ButtonUp.pressing())
         flywheel_setpt = 3600;
-    
-    flywheel_btn_pressing = main_controller.ButtonLeft.pressing()
-      || main_controller.ButtonRight.pressing()
-      || main_controller.ButtonUp.pressing()
-      || main_controller.ButtonDown.pressing();
+    }
 
+    flywheel_btn_pressing = main_controller.ButtonLeft.pressing() || main_controller.ButtonRight.pressing() || main_controller.ButtonUp.pressing() || main_controller.ButtonDown.pressing();
 
     // Debug Info
-    if(flywheel_btn_pressing)
+    if (flywheel_btn_pressing)
     {
       main_controller.Screen.clearLine(1);
       main_controller.Screen.setCursor(1, 0);
@@ -145,7 +141,7 @@ void programmers_opcontrol()
       flywheel_sys.spinRPM(flywheel_setpt);
     }
 
-    if(intake_btn_pressing)
+    if (intake_btn_pressing)
     {
       main_controller.Screen.clearLine(2);
       main_controller.Screen.setCursor(2, 0);
@@ -153,7 +149,7 @@ void programmers_opcontrol()
     }
 
     static timer screen_tmr;
-    if(screen_tmr.time(timeUnits::msec) > 500)
+    if (screen_tmr.time(timeUnits::msec) > 500)
     {
       main_controller.Screen.clearLine(3);
       main_controller.Screen.setCursor(3, 0);
