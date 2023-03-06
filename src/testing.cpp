@@ -6,16 +6,20 @@
 
 void test1_opcontrol()
 {
-    // Test1: Match Auto Testing
-    while(imu.isCalibrating()){}
-    // auto_non_loader_side().run();
-    // prog_skills_non_loader_side().run();
-    
-    CommandController cmd;
-    cmd.add(new SpinRollerCommand(position_t{.x=0,.y=0,.rot=90}));
-    cmd.run();
-    
-    programmers_opcontrol();
+  target_red = true;
+  vision_enabled = true;
+  // Test1: Match Auto Testing
+  while(imu.isCalibrating()){}
+  // SpinRollerCommand rol({0,0,0});
+  // while(!rol.run()){}
+  auto_non_loader_side().run();
+  // prog_skills_non_loader_side().run();
+  
+  // CommandController cmd;
+  // cmd.add(new SpinRollerCommand(position_t{.x=0,.y=0,.rot=90}));
+  // cmd.run();
+  
+  programmers_opcontrol();
 }
 
 void test2_opcontrol()
@@ -66,15 +70,14 @@ void programmers_opcontrol()
     pos = odometry_sys.get_position();
 
     // Vision Aim Tuning
-    // if(main_controller.ButtonA.pressing())
-    //   visaim.run();
-    // else
-    // {
-    drive_sys.drive_arcade(main_controller.Axis3.position() / 200.0, main_controller.Axis1.position() / 200.0);
+    if(main_controller.ButtonB.pressing())
+      visaim.run();
+    else
+      drive_sys.drive_arcade(main_controller.Axis3.position() / 200.0, main_controller.Axis1.position() / 200.0);
+    
     Pepsi rol = scan_roller();
     printf("roller: %s\n", rol==RED?"red":rol==BLUE?"blue":"neutral");
-    // printf("X: %2f, Y: %2f, R: %2f\n", pos.x, pos.y, pos.rot);
-    // }
+    printf("X: %2f, Y: %2f, R: %2f\n", pos.x, pos.y, pos.rot);
 
     // Flap Controls
     static bool flap_is_up = false;

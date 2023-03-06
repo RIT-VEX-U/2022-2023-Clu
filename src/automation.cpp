@@ -49,22 +49,19 @@ SpinRollerCommand::SpinRollerCommand(position_t align_pos): align_pos(align_pos)
  */
 bool SpinRollerCommand::run()
 {
-  if(check_pos)
+  vexDelay(100);
+  Pepsi cur_roller = scan_roller();
+  printf("%s\n", cur_roller==RED?"red":cur_roller==BLUE?"blue":"neutral");
+  if((cur_roller == RED && target_red)
+    || cur_roller == BLUE && !target_red)
   {
-    Pepsi cur_roller = scan_roller();
-    if((cur_roller == RED && target_red)
-      || cur_roller == BLUE && !target_red)
-    {
-      drive_sys.stop();
-      return true; 
-    }
-
-    check_pos = false;    
+    drive_sys.stop();
+    return true; 
   }
 
   CommandController cmd;
   cmd.add({
-     (new DriveForwardCommand(drive_sys, drive_fast_mprofile, 12, directionType::fwd))->withTimeout(1),
+     (new DriveForwardCommand(drive_sys, drive_fast_mprofile, 12, directionType::fwd))->withTimeout(0.5),
      (new DelayCommand(100)),
      (new OdomSetPosition(odometry_sys, align_pos)),
      (new DriveForwardCommand(drive_sys, drive_fast_mprofile, 6, directionType::rev))
@@ -252,9 +249,15 @@ bool VisionAimCommand::run()
   {
     fallback_triggered = true;
     if (drive_sys.turn_to_heading(stored_pos.rot, 0.6))
+    {
+      drive_sys.stop();
+      vexDelay(250);
       return true;
+    }
     else
+    {
       return false;
+    }
   }
 
   // If the camera isn't installed, move on to the next command
@@ -409,7 +412,7 @@ bool WallAlignCommand::run()
   return true;
 }
 
-#define ROLLER_AREA_CUTOFF 1000
+#define ROLLER_AREA_CUTOFF 1500
 
 Pepsi scan_roller()
 {

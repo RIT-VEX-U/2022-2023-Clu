@@ -30,8 +30,7 @@ public:
   bool run() override;
 
 private:  
-  position_t &align_pos;
-  // Pepsi cur_roller = NEUTRAL;
+  position_t align_pos;
   bool check_pos = true;
 };
 
