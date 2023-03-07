@@ -7,13 +7,14 @@
 void test1_opcontrol()
 {
   target_red = false;
+  target_red = false;
   vision_enabled = true;
   // Test1: Match Auto Testing
   while(imu.isCalibrating()){}
   // SpinRollerCommand rol({0,0,0});
   // while(!rol.run()){}
-  auto_non_loader_side().run();
-  // prog_skills_non_loader_side().run();
+  // auto_non_loader_side().run();
+  prog_skills_non_loader_side().run();
   
   // CommandController cmd;
   // cmd.add(new SpinRollerCommand(position_t{.x=0,.y=0,.rot=90}));
@@ -141,6 +142,10 @@ void programmers_opcontrol()
       main_controller.Screen.clearLine(1);
       main_controller.Screen.setCursor(1, 0);
       main_controller.Screen.print("RPM: %d", flywheel_setpt);
+      if(flywheel_setpt == 0)
+        flywheel_sys.stop();
+      else
+        flywheel_sys.spinRPM(flywheel_setpt);
       if(flywheel_setpt == 0)
         flywheel_sys.stop();
       else
