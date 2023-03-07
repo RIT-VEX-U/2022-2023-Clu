@@ -26,6 +26,7 @@ competition comp;
  */
 int main() {
   // Initializing Robot Configuration. DO NOT REMOVE!
+  StartScreen(Brain.Screen, {page_one, page_two, page_three, page_four, page_five});
   comp.autonomous(autonomous);
   comp.drivercontrol(opcontrol);
   vexcodeInit();
