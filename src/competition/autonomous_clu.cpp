@@ -5,10 +5,10 @@
 
 #define TURN_SPEED 0.6
 #define INTAKE_VOLT 12
-#define SHOOTING_RPM 3500
-#define THRESHOLD_RPM 150
-#define SINGLE_SHOT_TIME 0.2
-#define SINGLE_SHOT_VOLT 6
+#define SHOOTING_RPM 3450
+#define THRESHOLD_RPM 50
+#define SINGLE_SHOT_TIME 0.1
+#define SINGLE_SHOT_VOLT 9
 #define SINGLE_SHOT_RECOVER_DELAY_MS 200
 #define TRI_SHOT_TIME 1
 #define TRI_SHOT_VOLT 9
@@ -35,7 +35,11 @@ static void add_single_shot_cmd(CommandController &controller, double timeout=0.
 {
     controller.add(WAIT_FOR_FLYWHEEL, timeout);
     controller.add(AUTO_AIM, timeout);
+    controller.add_delay(250);
     controller.add(SHOOT_DISK);
+    controller.add(new StartIntakeCommand(intake, INTAKE_VOLT));
+    vexDelay(100);
+    controller.add(new StopIntakeCommand(intake));
     controller.add_delay(SINGLE_SHOT_RECOVER_DELAY_MS);
 }
 
@@ -77,7 +81,7 @@ CommandController auto_non_loader_side(){
     // Initialization
     position_t start_pos = {.x=132, .y=86.5, .rot=90}; 
     nlsa.add(new OdomSetPosition(odometry_sys, start_pos));
-    nlsa.add(new SpinRPMCommand(flywheel_sys, 3500)); // 3400 old
+    nlsa.add(new SpinRPMCommand(flywheel_sys, SHOOTING_RPM)); // 3400 old
     nlsa.add(new FlapDownCommand());
 
     // Drive to roller
@@ -92,7 +96,7 @@ CommandController auto_non_loader_side(){
     nlsa.add(DRIVE_TO_POINT_FAST(118, 72, fwd));
     nlsa.add(TURN_TO_HEADING(185));
     nlsa.add(new StartIntakeCommand(intake, INTAKE_VOLT));
-    nlsa.add(DRIVE_TO_POINT_SLOW(87, 69, fwd));
+    nlsa.add(DRIVE_TO_POINT_SLOW(88, 70, fwd));
 
     // Shoot!
     nlsa.add(TURN_TO_HEADING(150));
@@ -101,6 +105,7 @@ CommandController auto_non_loader_side(){
     add_single_shot_cmd(nlsa, 1);
     add_single_shot_cmd(nlsa, 1);
     add_single_shot_cmd(nlsa, 1);
+    nlsa.add(new StartIntakeCommand(intake, -INTAKE_VOLT)); // Purge unshot disks
     nlsa.add_delay(500);
 
     // Intake 2.1
@@ -109,7 +114,6 @@ CommandController auto_non_loader_side(){
     nlsa.add(DRIVE_TO_POINT_SLOW(97.7,80,fwd));
     // Intake 2.2
     nlsa.add(TURN_TO_HEADING(241));
-    PAUSE
     nlsa.add(DRIVE_TO_POINT_SLOW(86,59.3,fwd));
 
     // Back up, aim and shoot!
@@ -119,22 +123,23 @@ CommandController auto_non_loader_side(){
 
     add_single_shot_cmd(nlsa, 1);
     add_single_shot_cmd(nlsa, 1);
+    nlsa.add(new StartIntakeCommand(intake, -INTAKE_VOLT)); // Purge unshot disks
     nlsa.add_delay(500);
 
     nlsa.add(DRIVE_TO_POINT_SLOW(105.2,76.6,rev));
 
     //Intake 3.1
     nlsa.add(new StartIntakeCommand(intake, INTAKE_VOLT));
-    nlsa.add(DRIVE_TO_POINT_SLOW(107.2,61.3,fwd));
-    nlsa.add(DRIVE_TO_POINT_FAST(105.7,72.9,rev));
+    nlsa.add(DRIVE_TO_POINT_SLOW(107.2,59,fwd));
+    nlsa.add(DRIVE_TO_POINT_FAST(105.7,70,rev));
 
     //Intake 3.2
-    nlsa.add(DRIVE_TO_POINT_SLOW(101.5,60,fwd));
+    nlsa.add(DRIVE_TO_POINT_SLOW(101.5,59,fwd));
     nlsa.add(DRIVE_TO_POINT_FAST(111.3,76.7,rev));
     //Intake 3.3
     nlsa.add(TURN_TO_HEADING(286));
-    nlsa.add(DRIVE_TO_POINT_SLOW(114.6,64,fwd));
-    nlsa.add(DRIVE_TO_POINT_FAST(86,75,rev));
+    nlsa.add(DRIVE_TO_POINT_SLOW(116,62,fwd));
+    nlsa.add(DRIVE_TO_POINT_FAST(88,75,rev));
     nlsa.add(new StopIntakeCommand(intake));
 
     // Shoot!

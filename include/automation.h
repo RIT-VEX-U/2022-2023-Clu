@@ -189,6 +189,8 @@ public:
 
   bool run() override;
 
+  void on_timeout() override;
+
 private:
   PIDFF pidff;
   timer tmr;

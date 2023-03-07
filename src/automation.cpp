@@ -325,6 +325,11 @@ bool VisionAimCommand::run()
   return false;
 }
 
+void VisionAimCommand::on_timeout()
+{
+  drive_sys.stop();
+}
+
 /**
  * Constuct a TurnToPointCommand
  * @param odom Refrence to the OdometryTank object

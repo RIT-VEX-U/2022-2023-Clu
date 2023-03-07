@@ -6,7 +6,7 @@
 
 void test1_opcontrol()
 {
-  target_red = true;
+  target_red = false;
   vision_enabled = true;
   // Test1: Match Auto Testing
   while(imu.isCalibrating()){}
@@ -141,7 +141,10 @@ void programmers_opcontrol()
       main_controller.Screen.clearLine(1);
       main_controller.Screen.setCursor(1, 0);
       main_controller.Screen.print("RPM: %d", flywheel_setpt);
-      flywheel_sys.spinRPM(flywheel_setpt);
+      if(flywheel_setpt == 0)
+        flywheel_sys.stop();
+      else
+        flywheel_sys.spinRPM(flywheel_setpt);
     }
 
     if (intake_btn_pressing)
