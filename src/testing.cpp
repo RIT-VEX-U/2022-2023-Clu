@@ -6,15 +6,16 @@
 
 void test1_opcontrol()
 {
-  target_red = false;
-  target_red = false;
-  vision_enabled = true;
+  // target_red = true;
+  // vision_enabled = true;
   // Test1: Match Auto Testing
   while(imu.isCalibrating()){}
-  // SpinRollerCommand rol({0,0,0});
-  // while(!rol.run()){}
-  // auto_non_loader_side().run();
-  prog_skills_non_loader_side().run();
+
+  // Set up screen stuff
+  vexDelay(5000);
+
+  auto_non_loader_side().run();
+  // prog_skills_non_loader_side().run();
   
   // CommandController cmd;
   // cmd.add(new SpinRollerCommand(position_t{.x=0,.y=0,.rot=90}));

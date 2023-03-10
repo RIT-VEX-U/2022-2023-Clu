@@ -40,7 +40,7 @@ bool FlapDownCommand::run()
  * @param drive_sys the drive train that will allow us to apply pressure on the rollers
  * @param roller_motor The motor that will spin the roller
  */
-SpinRollerCommand::SpinRollerCommand(position_t align_pos): align_pos(align_pos) {}
+SpinRollerCommand::SpinRollerCommand(position_t align_pos): align_pos(align_pos), roller_count(0) {}
 
 /**
  * Run roller controller to spin the roller to our color
@@ -49,10 +49,11 @@ SpinRollerCommand::SpinRollerCommand(position_t align_pos): align_pos(align_pos)
  */
 bool SpinRollerCommand::run()
 {
+
   vexDelay(100);
   Pepsi cur_roller = scan_roller();
   printf("%s\n", cur_roller==RED?"red":cur_roller==BLUE?"blue":"neutral");
-  if((cur_roller == RED && target_red)
+  if(vision_enabled && (cur_roller == RED && target_red)
     || cur_roller == BLUE && !target_red)
   {
     drive_sys.stop();
@@ -68,6 +69,9 @@ bool SpinRollerCommand::run()
   });
 
   cmd.run();
+
+  if(!vision_enabled && ++roller_count >= 2)
+    return true;
   
   return false;
 }

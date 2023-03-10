@@ -32,6 +32,7 @@ public:
 private:  
   position_t align_pos;
   bool check_pos = true;
+  int roller_count;
 };
 
 /**

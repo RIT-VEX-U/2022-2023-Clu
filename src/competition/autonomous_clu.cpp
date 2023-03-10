@@ -5,10 +5,10 @@
 
 #define TURN_SPEED 0.6
 #define INTAKE_VOLT 12
-#define SHOOTING_RPM 3450
+#define SHOOTING_RPM 3400
 #define THRESHOLD_RPM 50
 #define SINGLE_SHOT_TIME 0.1
-#define SINGLE_SHOT_VOLT 9
+#define SINGLE_SHOT_VOLT 6
 #define SINGLE_SHOT_RECOVER_DELAY_MS 200
 #define TRI_SHOT_TIME 1
 #define TRI_SHOT_VOLT 9
@@ -99,9 +99,9 @@ CommandController auto_non_loader_side(){
     nlsa.add(DRIVE_TO_POINT_SLOW(88, 70, fwd));
 
     // Shoot!
-    nlsa.add(TURN_TO_HEADING(150));
+    nlsa.add(TURN_TO_HEADING(144));
     nlsa.add(new StopIntakeCommand(intake));
-    
+
     add_single_shot_cmd(nlsa, 1);
     add_single_shot_cmd(nlsa, 1);
     add_single_shot_cmd(nlsa, 1);
@@ -118,7 +118,7 @@ CommandController auto_non_loader_side(){
 
     // Back up, aim and shoot!
     nlsa.add(DRIVE_FORWARD_FAST(6,rev));
-    nlsa.add(TURN_TO_HEADING(154));
+    nlsa.add(TURN_TO_HEADING(146));
     nlsa.add(new StopIntakeCommand(intake));
 
     add_single_shot_cmd(nlsa, 1);
@@ -143,7 +143,7 @@ CommandController auto_non_loader_side(){
     nlsa.add(new StopIntakeCommand(intake));
 
     // Shoot!
-    nlsa.add(TURN_TO_HEADING(142));
+    nlsa.add(TURN_TO_HEADING(144));
     add_single_shot_cmd(nlsa, 1);
     add_single_shot_cmd(nlsa, 1);
     add_single_shot_cmd(nlsa, 1);
@@ -245,13 +245,14 @@ CommandController prog_skills_non_loader_side(){
     nlss.add(DRIVE_TO_POINT_SLOW(87,55,fwd));
     nlss.add(new StopIntakeCommand(intake));
 
-    nlss.add(new FlapUpCommand());
-    nlss.add(new SpinRPMCommand(flywheel_sys,3050));
+    nlss.add(new FlapDownCommand());
+    nlss.add(new SpinRPMCommand(flywheel_sys,3000));
     nlss.add(TURN_TO_HEADING(317));
 
     add_single_shot_cmd(nlss, 1);
     add_single_shot_cmd(nlss, 1);
     add_single_shot_cmd(nlss, 1);
+
     nlss.add(new StartIntakeCommand(intake, -INTAKE_VOLT));
 
     nlss.add(TURN_TO_HEADING(17));
@@ -260,16 +261,16 @@ CommandController prog_skills_non_loader_side(){
 
     nlss.add(new StartIntakeCommand(intake, INTAKE_VOLT));
     // Intake 2 disk 1
-    nlss.add(DRIVE_TO_POINT_SLOW(110, 49, fwd));
+    nlss.add(DRIVE_TO_POINT_SLOW(110, 49, fwd), 2);
     nlss.add(DRIVE_TO_POINT_SLOW(104.5, 63.6, rev));
 
     // Intake 2 disk 2
-    nlss.add(DRIVE_TO_POINT_SLOW(102.2, 51.2, fwd));
+    nlss.add(DRIVE_TO_POINT_SLOW(102.2, 51.2, fwd),2);
     nlss.add(DRIVE_TO_POINT_SLOW(120.8, 63.9, rev));
 
     // Intake 2 disk 3
     nlss.add(TURN_TO_HEADING(270));
-    nlss.add(DRIVE_TO_POINT_SLOW(122.4,51.9,fwd));
+    nlss.add(DRIVE_TO_POINT_SLOW(122.4,51.9,fwd),2);
     nlss.add(new StopIntakeCommand(intake));
     nlss.add(DRIVE_TO_POINT_SLOW(134, 65, rev));
     
@@ -304,6 +305,8 @@ CommandController prog_skills_non_loader_side(){
         cmd.run();
         return true;
     }));
+
+    nlss.add(new EndgameCommand(endgame_solenoid));
     //-24x
     //132y
     return nlss;
