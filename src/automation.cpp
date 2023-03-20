@@ -47,33 +47,38 @@ SpinRollerCommand::SpinRollerCommand(position_t align_pos): align_pos(align_pos)
  * Overrides run from AutoCommand
  * @returns true when execution is complete, false otherwise
  */
+
 bool SpinRollerCommand::run()
 {
 
   vexDelay(100);
   Pepsi cur_roller = scan_roller();
   printf("%s\n", cur_roller==RED?"red":cur_roller==BLUE?"blue":"neutral");
-  if(vision_enabled && (cur_roller == RED && target_red)
-    || cur_roller == BLUE && !target_red)
+  if(vision_enabled && (cur_roller == RED && target_red) || cur_roller == BLUE && !target_red)
   {
     drive_sys.stop();
-    return true; 
+    return true;
   }
 
   CommandController cmd;
   cmd.add({
-     (new DriveForwardCommand(drive_sys, drive_fast_mprofile, 12, directionType::fwd))->withTimeout(0.5),
-     (new DelayCommand(100)),
-     (new OdomSetPosition(odometry_sys, align_pos)),
-     (new DriveForwardCommand(drive_sys, drive_fast_mprofile, 6, directionType::rev))
+          (new DriveForwardCommand(drive_sys, drive_fast_mprofile, 12, directionType::fwd))->withTimeout(0.5),
+           (new DelayCommand(100)),
+           (new OdomSetPosition(odometry_sys, align_pos)),
+           (new DriveForwardCommand(drive_sys, drive_fast_mprofile, 6, directionType::rev))
   });
 
   cmd.run();
 
-  if(!vision_enabled && ++roller_count >= 2)
+  if(!vision_enabled && ++roller_count >= num_roller_fallback)
     return true;
-  
+
   return false;
+}
+
+void SpinRollerCommand::on_timeout()
+{
+  drive_sys.stop();
 }
 
 /**
@@ -178,42 +183,6 @@ bool PrintOdomContinousCommand::run()
   printf("(%.2f, %.2f), %.2f\n", pos.x, pos.y, pos.rot);
   return false;
 }
-/**
- * Construct a StartIntakeCommand
- * @param colorSensor The color sensor being used
- * @param color The hue value of the color being detected
- * @param rollerMotor The rollor motor to spin the roller
- * @param error Error for color detection color+-error
- */
-SpinToColorCommand::SpinToColorCommand(vex::optical &colorSensor, double color, vex::motor &rollerMotor, double error) : colorSensor(colorSensor), color(color), rollerMotor(rollerMotor), error(error) {}
-
-/**
- * Run the StopIntakeCommand
- * Overrides run from AutoCommand
- * @returns true when execution is complete, false otherwise
- */
-bool SpinToColorCommand::run()
-{
-  // To deal with wrap around
-  if (color <= error)
-  {
-    if (colorSensor.hue() > color + 15 && colorSensor.hue() < wrap_angle_deg(color - error))
-    {
-      return false;
-    }
-  }
-  // no wrap around
-  else if (colorSensor.hue() < wrap_angle_deg(color - error) || colorSensor.hue() > wrap_angle_deg(color + error))
-  {
-    rollerMotor.spin(vex::directionType::fwd);
-    return false;
-  }
-
-  rollerMotor.stop();
-
-  return true;
-}
-
 PID::pid_config_t vis_pid_cfg = {
     .p = .003,
     // .d = .0001,
@@ -223,13 +192,11 @@ PID::pid_config_t vis_pid_cfg = {
 FeedForward::ff_config_t vis_ff_cfg = {
     .kS = 0.07};
 
-#define VISION_CENTER 145
 #define MIN_AREA 500
 #define MAX_SPEED 0.5
-#define FALLBACK_MAX_DEGREES 10
 
-VisionAimCommand::VisionAimCommand(bool odometry_fallback)
-    : pidff(vis_pid_cfg, vis_ff_cfg), odometry_fallback(odometry_fallback), first_run(true), fallback_triggered(false)
+VisionAimCommand::VisionAimCommand(bool odometry_fallback, int vision_center, int fallback_degrees)
+    : pidff(vis_pid_cfg, vis_ff_cfg), odometry_fallback(odometry_fallback), first_run(true), fallback_triggered(false), vision_center(vision_center), fallback_degrees(fallback_degrees)
 {
 }
 
@@ -241,7 +208,7 @@ VisionAimCommand::VisionAimCommand(bool odometry_fallback)
 bool VisionAimCommand::run()
 {
 
- if (first_run)
+  if (first_run)
   {
     stored_pos = odometry_sys.get_position();
     drive_sys.reset_auto();
@@ -249,19 +216,13 @@ bool VisionAimCommand::run()
   }
 
   if (odometry_fallback &&
-      (fallback_triggered || fabs(OdometryBase::smallest_angle(stored_pos.rot, odometry_sys.get_position().rot)) > FALLBACK_MAX_DEGREES))
+      (fallback_triggered || fabs(OdometryBase::smallest_angle(stored_pos.rot, odometry_sys.get_position().rot)) > fallback_degrees))
   {
     fallback_triggered = true;
     if (drive_sys.turn_to_heading(stored_pos.rot, 0.6))
-    {
-      drive_sys.stop();
-      vexDelay(250);
       return true;
-    }
     else
-    {
       return false;
-    }
   }
 
   // If the camera isn't installed, move on to the next command
@@ -307,7 +268,7 @@ bool VisionAimCommand::run()
   {
 
     // Update the PID loop & drive the robot
-    pidff.set_target(VISION_CENTER);
+    pidff.set_target(vision_centerfallback_degrees);
     pidff.set_limits(-MAX_SPEED, MAX_SPEED);
     double out = pidff.update(x_val);
 
@@ -425,7 +386,7 @@ bool WallAlignCommand::run()
 
 Pepsi scan_roller()
 {
-  if(!cam.installed())
+  if (!cam.installed())
   {
     printf("Cam Disconnected!\n");
     return NEUTRAL;
@@ -437,20 +398,20 @@ Pepsi scan_roller()
   int red_area = red_obj.width * red_obj.height;
   int red_y = red_obj.centerY;
 
-  if(cam.objectCount < 1 || red_area < ROLLER_AREA_CUTOFF)
-      return NEUTRAL;
-  
+  if (cam.objectCount < 1 || red_area < ROLLER_AREA_CUTOFF)
+    return NEUTRAL;
+
   // SCAN FOR BLUE
   cam.takeSnapshot(BLUE_GOAL);
   vex::vision::object blue_obj = cam.largestObject;
   int blue_area = blue_obj.width * blue_obj.height;
   int blue_y = blue_obj.centerY;
 
-  if(cam.objectCount < 1 || blue_area < ROLLER_AREA_CUTOFF)
-      return NEUTRAL;
-  
-  if(red_y > blue_y)
-      return RED;
+  if (cam.objectCount < 1 || blue_area < ROLLER_AREA_CUTOFF)
+    return NEUTRAL;
+
+  if (red_y > blue_y)
+    return RED;
   else
-      return BLUE;
+    return BLUE;
 }

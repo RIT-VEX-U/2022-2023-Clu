@@ -28,8 +28,9 @@ public:
    * @returns true when execution is complete, false otherwise
    */
   bool run() override;
+  void on_timeout() override;
 
-private:  
+private:
   position_t align_pos;
   bool check_pos = true;
   int roller_count;
@@ -186,10 +187,9 @@ public:
   /**
    * Contstruct a new VisionAimCommmand
    */
-  VisionAimCommand(bool odometry_fallback = false);
+  VisionAimCommand(bool odometry_fallback, int vision_center, int fallback_degrees);
 
   bool run() override;
-
   void on_timeout() override;
 
 private:
@@ -199,6 +199,8 @@ private:
   bool first_run;
   position_t stored_pos;
   bool fallback_triggered;
+  int vision_center;
+  int fallback_degrees;
 };
 
 class FlapUpCommand : public AutoCommand
@@ -292,8 +294,9 @@ private:
 
 enum Pepsi
 {
-    RED, BLUE, NEUTRAL
+  RED,
+  BLUE,
+  NEUTRAL
 };
 
 Pepsi scan_roller();
-
