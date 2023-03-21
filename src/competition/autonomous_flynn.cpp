@@ -30,7 +30,7 @@
 #define StartIntake (new StartIntakeCommand(intake, INTAKE_VOLT))
 #define StopIntake (new StopIntakeCommand(intake))
 
-#define VisionAim (new VisionAimCommand(true))
+#define VisionAim (new VisionAimCommand(true, 145, 5))
 #define WaitForFW (new WaitUntilUpToSpeedCommand(flywheel_sys, 10))
 #define ShootDisk (new ShootCommand(intake, SINGLE_SHOT_TIME, SINGLE_SHOT_VOLT))
 #define SpinFWAt(rpm) (new SpinRPMCommand(flywheel_sys, rpm))
@@ -229,7 +229,7 @@ void pleasant_opcontrol()
 
   int i = 0;
 
-  VisionAimCommand visaim;
+  VisionAimCommand visaim(false, 145, 5);
 
   timer loop_timer;
   loop_timer.reset();

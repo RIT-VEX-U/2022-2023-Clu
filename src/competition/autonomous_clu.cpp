@@ -26,7 +26,7 @@
 #define TURN_TO_POINT(x, y) (new TurnToPointCommand(drive_sys, odometry_sys, *config.turn_feedback, {x, y}))
 
 // shooting commands
-#define AUTO_AIM (new VisionAimCommand())
+#define AUTO_AIM (new VisionAimCommand(true, 150, 5))
 #define WAIT_FOR_FLYWHEEL (new WaitUntilUpToSpeedCommand(flywheel_sys, THRESHOLD_RPM))
 #define SHOOT_DISK (new ShootCommand(intake, SINGLE_SHOT_TIME, SINGLE_SHOT_VOLT))
 #define TRI_SHOT_DISK (new ShootCommand(intake, TRI_SHOT_TIME, TRI_SHOT_VOLT))

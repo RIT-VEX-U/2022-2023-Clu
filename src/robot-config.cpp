@@ -160,6 +160,7 @@ std::string SkillsNonLoaderSideDisplayName = "Skills Non Loader Side";
 
 bool target_red = true;
 bool vision_enabled = false;
+int num_roller_fallback = 2;
 
 RobotMode curr_mode = INIT;
 

@@ -37,7 +37,6 @@ bool FlapDownCommand::run()
 
 /**
  * Construct a SpinRollerCommand
- * @param drive_sys the drive train that will allow us to apply pressure on the rollers
  * @param roller_motor The motor that will spin the roller
  */
 SpinRollerCommand::SpinRollerCommand(position_t align_pos): align_pos(align_pos), roller_count(0) {}
@@ -268,7 +267,7 @@ bool VisionAimCommand::run()
   {
 
     // Update the PID loop & drive the robot
-    pidff.set_target(vision_centerfallback_degrees);
+    pidff.set_target(vision_center);
     pidff.set_limits(-MAX_SPEED, MAX_SPEED);
     double out = pidff.update(x_val);
 
