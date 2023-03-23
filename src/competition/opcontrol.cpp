@@ -125,7 +125,7 @@ void opcontrol()
   flap_up();
   timer tmr;
 
-  VisionAimCommand visaim;
+  VisionAimCommand visaim(false, 140, 5);
   int i = 0;
   double time = 0.0;
   // Periodic
