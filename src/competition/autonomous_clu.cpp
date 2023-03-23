@@ -34,7 +34,7 @@
 static void add_single_shot_cmd(CommandController &controller, double timeout=0.0)
 {
     controller.add(WAIT_FOR_FLYWHEEL, timeout);
-    controller.add(AUTO_AIM, timeout);
+    // controller.add(AUTO_AIM, timeout);
     controller.add_delay(250);
     controller.add(SHOOT_DISK);
     controller.add(new StartIntakeCommand(intake, INTAKE_VOLT));
@@ -99,7 +99,7 @@ CommandController auto_non_loader_side(){
     nlsa.add(DRIVE_TO_POINT_SLOW(88, 70, fwd));
 
     // Shoot!
-    nlsa.add(TURN_TO_HEADING(144));
+    nlsa.add(TURN_TO_HEADING(146));
     nlsa.add(new StopIntakeCommand(intake));
 
     add_single_shot_cmd(nlsa, 1);
@@ -118,7 +118,7 @@ CommandController auto_non_loader_side(){
 
     // Back up, aim and shoot!
     nlsa.add(DRIVE_FORWARD_FAST(6,rev));
-    nlsa.add(TURN_TO_HEADING(146));
+    nlsa.add(TURN_TO_HEADING(150));
     nlsa.add(new StopIntakeCommand(intake));
 
     add_single_shot_cmd(nlsa, 1);
@@ -130,28 +130,26 @@ CommandController auto_non_loader_side(){
 
     //Intake 3.1
     nlsa.add(new StartIntakeCommand(intake, INTAKE_VOLT));
-    nlsa.add(DRIVE_TO_POINT_SLOW(107.2,59,fwd));
-    nlsa.add(DRIVE_TO_POINT_FAST(105.7,70,rev));
+    nlsa.add(DRIVE_TO_POINT_SLOW(109,58,fwd), 2);
+    nlsa.add(DRIVE_TO_POINT_FAST(107,70,rev));
 
     //Intake 3.2
-    nlsa.add(DRIVE_TO_POINT_SLOW(101.5,59,fwd));
-    nlsa.add(DRIVE_TO_POINT_FAST(111.3,76.7,rev));
+    nlsa.add(DRIVE_TO_POINT_SLOW(103,58,fwd), 2);
+    nlsa.add(DRIVE_TO_POINT_FAST(113,76.7,rev));
     //Intake 3.3
     nlsa.add(TURN_TO_HEADING(286));
-    nlsa.add(DRIVE_TO_POINT_SLOW(116,62,fwd));
-    nlsa.add(DRIVE_TO_POINT_FAST(88,75,rev));
+    nlsa.add(DRIVE_TO_POINT_SLOW(118,61,fwd), 2);
+    nlsa.add(DRIVE_TO_POINT_FAST(90,73,rev));
     nlsa.add(new StopIntakeCommand(intake));
 
     // Shoot!
-    nlsa.add(TURN_TO_HEADING(144));
+    nlsa.add(TURN_TO_HEADING(148));
     add_single_shot_cmd(nlsa, 1);
     add_single_shot_cmd(nlsa, 1);
     add_single_shot_cmd(nlsa, 1);
     nlsa.add_delay(500);
 
-    return nlsa;
-    
-    
+    return nlsa;    
 }
 
 timer skills_tmr;
@@ -182,6 +180,9 @@ Map from page 40 of the game manual
 */
 CommandController prog_skills_non_loader_side(){
 
+    // Setup
+    vision_enabled = true;
+
     CommandController nlss;
     skills_tmr.reset();
 
@@ -208,7 +209,7 @@ CommandController prog_skills_non_loader_side(){
 
     // Intake Disk 1
     nlss.add(new StartIntakeCommand(intake, INTAKE_VOLT));
-    nlss.add(DRIVE_TO_POINT_SLOW(130, 134, fwd));
+    nlss.add(DRIVE_TO_POINT_SLOW(130, 134, fwd), 3);
     nlss.add(DRIVE_TO_POINT_FAST(127,112,rev));
     nlss.add(TURN_TO_HEADING(128));
     nlss.add(DRIVE_TO_POINT_SLOW(115,127,fwd));

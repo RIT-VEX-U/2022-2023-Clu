@@ -44,8 +44,8 @@ void autonomous()
     //   delete current_auto;
     // }
 
-    auto_non_loader_side().run();
-    // prog_skill.0-s_non_loader_side().run();.
+    // auto_non_loader_side().run();
+    prog_skills_non_loader_side().run();
 
     flywheel_sys.stop();
     intake.stop();
