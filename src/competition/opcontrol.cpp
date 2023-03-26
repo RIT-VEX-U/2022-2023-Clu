@@ -46,6 +46,8 @@ void opcontrol()
 {
   // test1_opcontrol();
   // programmers_opcontrol();
+  tuning_opcontrol();
+
   // select_mode();
   // printf("angle: %d mode: %d\n",mode_switch.value(pct), curr_mode);
   // return;

@@ -50,6 +50,52 @@ static void add_tri_shot_cmd(CommandController &controller, double timeout=0.0)
     controller.add_delay(TRI_SHOT_RECOVER_DELAY_MS);
 }
 
+CommandController clu_auto_current()
+{
+    CommandController cmd;
+
+    cmd.add({
+
+        // Init
+        new OdomSetPosition(odometry_sys, {.x=0, .y=0, .rot=0}),
+        new SpinRPMCommand(flywheel_sys, 3600),
+
+        // Drive to intake 1 (3rd disc)
+        new StartIntakeCommand(intake, INTAKE_VOLT),
+        DRIVE_TO_POINT_FAST(0, 0, fwd),
+        DRIVE_TO_POINT_FAST(0, 0, rev),
+        TURN_TO_HEADING(0),
+        new StopIntakeCommand(intake),
+
+        // Shoot 1 (3 discs)
+        AUTO_AIM, // CHANGE TO CHECK_AIM
+        WAIT_FOR_FLYWHEEL,
+        SHOOT_DISK,
+        WAIT_FOR_FLYWHEEL,
+        SHOOT_DISK,
+        WAIT_FOR_FLYWHEEL,
+        SHOOT_DISK,
+        new DelayCommand(SINGLE_SHOT_RECOVER_DELAY_MS),
+
+        // Roller
+        
+
+
+    });
+
+
+
+    return cmd;
+}
+
+CommandController clu_skill_current()
+{
+    CommandController cmd;
+
+    return cmd;
+}
+
+
 /*
 Auto Non-loader side
 JOEBOT
@@ -73,7 +119,7 @@ Map from page 40 of the game manual
  Human Instructions:
  Align robot to specified place and angle using NON LOADER SIDE AUTO jig
 */
-CommandController auto_non_loader_side(){
+CommandController clu_auto_wv(){
 
     #define PAUSE return nlsa;
     CommandController nlsa;
@@ -178,7 +224,7 @@ Map from page 40 of the game manual
  Human Instructions:
  Align robot to specified place and angle using NON LOADER SIDE SKILLS jig
 */
-CommandController prog_skills_non_loader_side(){
+CommandController clu_skills_wv(){
 
     // Setup
     vision_enabled = true;
