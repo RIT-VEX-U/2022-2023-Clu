@@ -1,35 +1,20 @@
 #include "competition/autonomous_clu.h"
+#include "competition/autonomous.h"
 #include "robot-config.h"
 #include "automation.h"
 #include "vision.h"
 
-#define TURN_SPEED 0.6
-#define INTAKE_VOLT 12
-#define SHOOTING_RPM 3400
-#define THRESHOLD_RPM 50
-#define SINGLE_SHOT_TIME 0.1
-#define SINGLE_SHOT_VOLT 6
-#define SINGLE_SHOT_RECOVER_DELAY_MS 200
-#define TRI_SHOT_TIME 1
-#define TRI_SHOT_VOLT 9
-#define TRI_SHOT_RECOVER_DELAY_MS 200
+const double TURN_SPEED = 0.6;
+const double INTAKE_VOLT = 12;
+const int  SHOOTING_RPM = 3400;
+const int THRESHOLD_RPM = 50;
+const double SINGLE_SHOT_TIME = 0.1;
+const double SINGLE_SHOT_VOLT = 6;
+const int SINGLE_SHOT_RECOVER_DELAY_MS = 200;
+const double TRI_SHOT_TIME = 1;
+const double TRI_SHOT_VOLT = 9;
+const int TRI_SHOT_RECOVER_DELAY_MS = 200;
 
-// drive commands
-#define DRIVE_TO_POINT_FAST(x,y,dir) (new DriveToPointCommand(drive_sys, drive_fast_mprofile, x, y, directionType::dir))
-#define DRIVE_TO_POINT_SLOW(x,y,dir) (new DriveToPointCommand(drive_sys, drive_slow_mprofile, x, y, directionType::dir))
-#define DRIVE_FORWARD_FAST(in, dir) (new DriveForwardCommand(drive_sys, drive_fast_mprofile, in, directionType::dir))
-#define DRIVE_FORWARD_SLOW(in, dir) (new DriveForwardCommand(drive_sys, drive_slow_mprofile, in, directionType::dir))
-
-// turn commands
-#define TURN_TO_HEADING(dir) (new TurnToHeadingCommand(drive_sys, *config.turn_feedback, dir, TURN_SPEED))
-#define TURN_DEGREES(dir) (new TurnDegreesCommand(drive_sys, *config.turn_feedback, dir, TURN_SPEED))
-#define TURN_TO_POINT(x, y) (new TurnToPointCommand(drive_sys, odometry_sys, *config.turn_feedback, {x, y}))
-
-// shooting commands
-#define AUTO_AIM (new VisionAimCommand(true, 150, 5))
-#define WAIT_FOR_FLYWHEEL (new WaitUntilUpToSpeedCommand(flywheel_sys, THRESHOLD_RPM))
-#define SHOOT_DISK (new ShootCommand(intake, SINGLE_SHOT_TIME, SINGLE_SHOT_VOLT))
-#define TRI_SHOT_DISK (new ShootCommand(intake, TRI_SHOT_TIME, TRI_SHOT_VOLT))
 
 static void add_single_shot_cmd(CommandController &controller, double timeout=0.0)
 {
