@@ -46,13 +46,12 @@ CommandController clu_auto_current()
         new SpinRPMCommand(flywheel_sys, 3600),
 
         // Drive to intake 1 (3rd disc)
-        new StartIntakeCommand(intake, INTAKE_VOLT),
+        START_INTAKE,
         DRIVE_TO_POINT_FAST(0, 0, fwd),
-        DRIVE_TO_POINT_FAST(0, 0, rev),
+        
+        // Turn & Shoot 1 (3 discs)
         TURN_TO_HEADING(0),
-        new StopIntakeCommand(intake),
-
-        // Shoot 1 (3 discs)
+        STOP_INTAKE,
         AUTO_AIM, // CHANGE TO CHECK_AIM
         WAIT_FOR_FLYWHEEL,
         SHOOT_DISK,
@@ -60,15 +59,47 @@ CommandController clu_auto_current()
         SHOOT_DISK,
         WAIT_FOR_FLYWHEEL,
         SHOOT_DISK,
-        new DelayCommand(SINGLE_SHOT_RECOVER_DELAY_MS),
+        DELAY(500),
 
-        // Roller
-        
+        // Turn and intake 2 (2 discs)
+        TURN_TO_HEADING(0),
+        START_INTAKE,
+        DRIVE_TO_POINT_FAST(0,0,fwd),
 
+        // Shoot 2 (2 discs)
+        TURN_TO_HEADING(0),
+        AUTO_AIM, // CHANGE TO CHECK_AIM
+        WAIT_FOR_FLYWHEEL,
+        SHOOT_DISK,
+        WAIT_FOR_FLYWHEEL,
+        SHOOT_DISK,
+        DELAY(500),
 
+        // Turn & intake along barrier (3 discs)
+        TURN_TO_HEADING(0),
+        DRIVE_TO_POINT_FAST(0,0,fwd),
+        START_INTAKE,
+        DRIVE_TO_POINT_FAST(0,0,fwd),
+        TURN_TO_HEADING(0),
+        STOP_INTAKE,
+
+        // Turn and shoot 3 (3 discs)
+        TURN_TO_HEADING(0),
+        AUTO_AIM,
+        WAIT_FOR_FLYWHEEL,
+        SHOOT_DISK,
+        WAIT_FOR_FLYWHEEL,
+        SHOOT_DISK,
+        WAIT_FOR_FLYWHEEL,
+        SHOOT_DISK,
+        DELAY(500),
+
+        // Turn and go to roller
+        TURN_TO_HEADING(0),
+        DRIVE_TO_POINT_FAST(0,0,fwd),
+        TURN_TO_HEADING(0),
+        // TODO roller code
     });
-
-
 
     return cmd;
 }
