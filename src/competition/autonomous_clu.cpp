@@ -109,6 +109,109 @@ CommandController clu_auto_current()
     return cmd;
 }
 
+CommandController clu_auto_rush_current()
+{
+    CommandController cmd;
+
+    cmd.add({
+        // Init
+        new OdomSetPosition(odometry_sys, {.x=0, .y=0, .rot=0}),
+        new SpinRPMCommand(flywheel_sys, 3600),
+        new FlapDownCommand(),
+
+        // Drive to 3 & intake
+        START_INTAKE,
+        DRIVE_TO_POINT_FAST(0, 0, fwd),
+        DELAY(2000), // Index
+        STOP_INTAKE,
+        new SpinRPMCommand(flywheel_sys, 3600), // Preset for shoot
+        DRIVE_TO_POINT_FAST(0, 0, rev),
+
+        // Turn & shoot (3 discs)
+        TURN_TO_HEADING(0),
+        AUTO_AIM,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+
+        // Intake 2 (3 discs)
+        TURN_TO_HEADING(0),
+        START_INTAKE,
+        DRIVE_TO_POINT_FAST(0, 0, fwd),
+        new SpinRPMCommand(flywheel_sys, 3600), // Preset for shoot
+        TURN_TO_HEADING(0),
+        STOP_INTAKE,
+
+        // Shoot 2 (3 discs)
+        AUTO_AIM,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+
+        // Intake 3 along barrier (3 discs)
+        TURN_TO_HEADING(0),
+        START_INTAKE,
+        DRIVE_TO_POINT_SLOW(0, 0, fwd),
+        new SpinRPMCommand(flywheel_sys, 3600), // Preset for shoot
+        TURN_TO_HEADING(0),
+        STOP_INTAKE,
+
+        // Shoot 3 (3 discs)
+        AUTO_AIM,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+
+        // Intake 4 (preloads, 2 discs)
+        TURN_TO_HEADING(0),
+        START_INTAKE,
+        new SpinRPMCommand(flywheel_sys, 3600), // Preset for shoot
+        DRIVE_TO_POINT_FAST(0,0,fwd),
+        TURN_TO_HEADING(0),
+        STOP_INTAKE,
+
+        // Shoot 4 (2 discs)
+        AUTO_AIM,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+
+        // Drive to Roller
+        TURN_TO_HEADING(0),
+        DRIVE_TO_POINT_FAST(0, 0, fwd),
+        TURN_TO_HEADING(0),
+
+
+        // Roller
+        DRIVE_FORWARD_FAST(0, fwd)->withTimeout(2),
+        DRIVE_FORWARD_FAST(0, rev),
+        // DRIVE_FORWARD_FAST(0, fwd)->withTimeout(2),
+        // DRIVE_FORWARD_FAST(0, rev),
+
+        TURN_TO_HEADING(0),
+
+        // END
+    });
+
+    return cmd;
+}
+
 CommandController clu_skills_current()
 {
     CommandController cmd;
