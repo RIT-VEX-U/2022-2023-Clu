@@ -8,9 +8,9 @@ const double TURN_SPEED = 0.6;
 const double INTAKE_VOLT = 12;
 const int  SHOOTING_RPM = 3400;
 const int THRESHOLD_RPM = 100;
-const double SINGLE_SHOT_TIME = 0.1;
-const double SINGLE_SHOT_VOLT = 6;
-const int SINGLE_SHOT_RECOVER_DELAY_MS = 200;
+const double SINGLE_SHOT_TIME = 0.07;
+const double SINGLE_SHOT_VOLT = 12;
+const int SINGLE_SHOT_RECOVER_DELAY_MS = 800;
 const double TRI_SHOT_TIME = 1;
 const double TRI_SHOT_VOLT = 9;
 const int TRI_SHOT_RECOVER_DELAY_MS = 200;
@@ -51,8 +51,8 @@ CommandController clu_auto_current()
         DRIVE_TO_POINT_FAST(108, 84, fwd),
         
         // Turn & Shoot 1 (3 discs)
-        TURN_TO_HEADING(157.8),
-        DELAY(1000), // Finish indexing
+        TURN_TO_HEADING(155),
+        DELAY(500), // Finish indexing
         STOP_INTAKE,
         // AUTO_AIM,
         DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
@@ -62,7 +62,9 @@ CommandController clu_auto_current()
         DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
         SHOOT_DISK,
         DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        new StartIntakeCommand(intake, -12),
 
+        
         // Turn and intake 2 (2 discs)
         TURN_TO_HEADING(227),
         START_INTAKE,
@@ -71,22 +73,27 @@ CommandController clu_auto_current()
         DRIVE_TO_POINT_FAST(84.7,61,fwd),
 
         // Shoot 2 (2 discs)
-        TURN_TO_HEADING(137),
+        TURN_TO_HEADING(135),
+        STOP_INTAKE,
         // AUTO_AIM, // CHANGE TO CHECK_AIM
         DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
         SHOOT_DISK,
         DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
         SHOOT_DISK,
         DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        new StartIntakeCommand(intake, -12),
+
         
         // Turn & intake along barrier (3 discs)
         TURN_TO_HEADING(338),
         DRIVE_TO_POINT_SLOW(90.2,58.3,fwd),
         START_INTAKE,
-        DRIVE_TO_POINT_SLOW(130.2,58.2,fwd),
-
+        
+        DRIVE_TO_POINT_SLOW(120,58.7,fwd),
+        DRIVE_TO_POINT_SLOW(129,57,fwd),
+        
         // Turn and shoot 3 (3 discs)
-        TURN_TO_HEADING(144),
+        TURN_TO_HEADING(150),
         STOP_INTAKE,
         // AUTO_AIM,
         DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
@@ -97,12 +104,12 @@ CommandController clu_auto_current()
         SHOOT_DISK,
         DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
 
-
         // Turn and go to roller
         TURN_TO_HEADING(90),
-        DRIVE_TO_POINT_FAST(128,105,fwd),
+        DRIVE_TO_POINT_FAST(123,108,fwd),
         TURN_TO_HEADING(0),
         // TODO roller code
+        
         
     });
 

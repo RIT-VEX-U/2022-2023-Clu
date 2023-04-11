@@ -93,21 +93,27 @@ ShootCommand::ShootCommand(vex::motor &firing_motor, double seconds_to_shoot, do
  */
 bool ShootCommand::run()
 {
-  if (!func_initialized)
-  {
-    tmr.reset();
-    func_initialized = true;
-  }
+  // if (!func_initialized)
+  // {
+  //   tmr.reset();
+  //   func_initialized = true;
+  // }
 
-  if (tmr.time(vex::seconds) > seconds_to_shoot)
-  {
-    func_initialized = false;
-    firing_motor.stop();
-    return true;
-  }
-  printf("Shooting at %f RPM\n", flywheel_sys.getRPM());
-  firing_motor.spin(vex::fwd, volt, vex::volt); // TODO figure out if this needs to be negated to slap it into the flywheel
-  return false;
+  // if (tmr.time(vex::seconds) > seconds_to_shoot)
+  // {
+  //   func_initialized = false;
+  //   firing_motor.stop();
+  //   return true;
+  // }
+  // printf("Shooting at %f RPM\n", flywheel_sys.getRPM());
+  // firing_motor.spin(vex::fwd, volt, vex::volt); // TODO figure out if this needs to be negated to slap it into the flywheel
+  // return false;
+
+  firing_motor.spin(directionType::fwd, volt, voltageUnits::volt);
+  vexDelay(seconds_to_shoot * 1000);
+  firing_motor.stop();
+
+  return true;
 }
 
 /**
