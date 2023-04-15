@@ -15,7 +15,8 @@ void test1_opcontrol()
   // Set up screen stuff
   // vexDelay(5000);
   
-  clu_auto_current().run();
+  // clu_auto_current().run();
+  clu_skills_current().run();
   
   programmers_opcontrol();
 }
@@ -35,11 +36,12 @@ void tuning_opcontrol()
     // tune_odometry_wheel_diam();
     // tune_odometry_wheelbase();
     // tune_flywheel_ff();
+    tune_flywheel_pid();
     // tune_drive_ff_ks(DRIVE);
     // tune_drive_ff_kv(DRIVE, 0.03);
     // tune_drive_motion_maxv(TURN);
     // tune_drive_motion_accel(TURN, 700);
-    tune_drive_pid(DRIVE);
+    // tune_drive_pid(DRIVE);
 
     // if(main_controller.ButtonR1.pressing())
     //   intake.spin(directionType::rev, 12, volt);

@@ -365,6 +365,7 @@ void tune_flywheel_ff()
     double flywheel_target_pct = .85;
     static bool new_press = true;
     static int counter = 0;
+    static timer tmr;
     if (main_controller.ButtonA.pressing())
     {
         counter++;
@@ -373,6 +374,7 @@ void tune_flywheel_ff()
             reset_avg_counter();
             new_press = false;
             printf("rpm kv");
+            tmr.reset();
         }
 
         flywheel_sys.spin_raw(flywheel_target_pct);
@@ -382,11 +384,16 @@ void tune_flywheel_ff()
             return;
         }
 
-        double rawRPM = 18.0 * flywheel_motors.velocity(velocityUnits::rpm);
+        double kv = 0;
 
-        double rpm = rawRPM; // flywheel_sys.getRPM();
-        double kv = flywheel_target_pct / continuous_avg(rpm);
+        if (tmr.time(sec) > 5.0)
+        {
 
+            double rawRPM = 18.0 * flywheel_motors.velocity(velocityUnits::rpm);
+
+            double rpm = rawRPM; // flywheel_sys.getRPM();
+            kv = flywheel_target_pct / continuous_avg(rpm);
+        }
         main_controller.Screen.clearScreen();
         main_controller.Screen.setCursor(1, 1);
         main_controller.Screen.print("kv: %f", kv);
@@ -413,6 +420,8 @@ void tune_flywheel_pid()
                                             { setpt_rpm += 50; });
         main_controller.ButtonLeft.pressed([]()
                                            { setpt_rpm -= 50; });
+                                           
+        first_run = false;
     }
 
     static bool new_press = true;
