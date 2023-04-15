@@ -192,6 +192,11 @@ FeedForward::ff_config_t vis_ff_cfg = {
     .kS = 0.07};
 
 #define MIN_AREA 500
+#define MIN_SMALL_AREA 125
+#define MAX_SMALL_AREA 2205
+
+#define MIN_LARGE_AREA 114
+#define MAX_LARGE_AREA 3158
 #define MAX_SPEED 0.5
 
 VisionAimCommand::VisionAimCommand(bool odometry_fallback, int vision_center, int fallback_degrees)
@@ -206,7 +211,6 @@ VisionAimCommand::VisionAimCommand(bool odometry_fallback, int vision_center, in
  */
 bool VisionAimCommand::run()
 {
-
   if (first_run)
   {
     stored_pos = odometry_sys.get_position();
@@ -233,33 +237,81 @@ bool VisionAimCommand::run()
 
   // Take a snapshot with each color selected,
   // and store the largest found object for each in a vector
-  vision::object red_obj, blue_obj;
+  //vision::object red_obj, blue_obj;
 
-  // Get largest red blob
-  cam.takeSnapshot(RED_GOAL);
-  int red_count = cam.objectCount;
-  if (red_count > 0)
-    red_obj = cam.largestObject;
-
-  // Get largest blue blob
-  cam.takeSnapshot(BLUE_GOAL);
-  int blue_count = cam.objectCount;
-  if (blue_count > 0)
-    blue_obj = cam.largestObject;
-
-  // Compare the areas of the largest
-  double red_area = red_obj.width * red_obj.height;
-  double blue_area = blue_obj.width * blue_obj.height;
   int x_val = 0;
+  // Get largest red blob
+  
+  // int red_count = cam.objectCount;
+  // if (red_count > 0){
+    
+  // }
+  if(target_red){
+    cam.takeSnapshot(RED_GOAL);
+  } else {
+    cam.takeSnapshot(BLUE_GOAL);
+  }
 
-  if (red_area > blue_area && red_area > MIN_AREA && target_red)
-  {
-    x_val = red_obj.centerX;
-  }
-  else if (blue_area > red_area && blue_area > MIN_AREA && !target_red)
-  {
-    x_val = blue_obj.centerX;
-  }
+  vector<vex::vision::object> small_blobs;
+  vector<vex::vision::object> large_blobs;
+
+
+  printf("Object Count %ld\n", cam.objectCount);
+  // for(int i = 0; i < cam.objectCount; i++){
+  //   double area = cam.objects[i].width * cam.objects[i].height;
+  //   if(area >= MIN_SMALL_AREA && area <= MAX_SMALL_AREA){
+  //     small_blobs.push_back(cam.objects[i]);
+  //   }else if(area >= MIN_LARGE_AREA && area <= MAX_LARGE_AREA){
+  //     large_blobs.push_back(cam.objects[i]);
+  //   }
+  // }
+
+  // int outer_loop_size;
+  // int inner_loop_size;
+  
+  // if(small_blobs.size() > large_blobs.size()){
+  //   outer_loop_size = small_blobs.size();
+  //   inner_loop_size = large_blobs.size();
+  // } else {
+  //   outer_loop_size = large_blobs.size();
+  //   inner_loop_size = small_blobs.size();
+  // }
+  
+  // for(int i = 0; i < outer_loop_size; i++){
+  //   for(int j = 0; j < inner_loop_size; j++){
+  //     if(fabs(small_blobs[i].centerX - large_blobs[j].centerX) <= 5){
+  //       x_val = small_blobs[i].centerX;
+  //     }
+  //   }
+  // }
+  for(int i = 0; i < cam.objectCount; i++){
+    double blob_1_area = cam.objects[i].width * cam.objects[i].height;
+    if(blob_1_area < MIN_LARGE_AREA || blob_1_area > MAX_LARGE_AREA){
+      continue;
+    }
+      for(int j = i+1; j < cam.objectCount; j++){
+        double blob_2_area = cam.objects[j].width * cam.objects[j].height;
+        if(fabs(cam.objects[i].centerX - cam.objects[j].centerX) < 5 && blob_2_area >= MIN_LARGE_AREA && blob_2_area <= MAX_LARGE_AREA){
+          x_val = cam.objects[i].centerX;
+        }
+      }
+    }
+
+
+
+  // // Compare the areas of the largest
+  // double red_area = red_obj.width * red_obj.height;
+  // double blue_area = blue_obj.width * blue_obj.height;
+  
+
+  // if (red_area > blue_area && red_area > MIN_AREA && target_red)
+  // {
+  //   x_val = red_obj.centerX;
+  // }
+  // else if (blue_area > red_area && blue_area > MIN_AREA && !target_red)
+  // {
+  //   x_val = blue_obj.centerX;
+  // }
 
   printf("CenterX: %d\n", x_val);
 
