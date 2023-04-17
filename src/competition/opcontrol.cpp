@@ -44,7 +44,7 @@ void tripleshot()
 
 void opcontrol()
 {
-  test1_opcontrol();
+  // test1_opcontrol();
   // programmers_opcon1trol();
   // tuning_opcontrol();
 
@@ -73,7 +73,7 @@ void opcontrol()
 
 #define INTAKE_NORMAL 9.5
 #define INTAKE_OVERFILL 9.5
-#define FLYWHEEL_NORMAL 4000
+#define FLYWHEEL_NORMAL 3200
 #define FLYWHEEL_OVERFILL 2650
 
   static std::atomic<double> cur_intake_volt(INTAKE_NORMAL);

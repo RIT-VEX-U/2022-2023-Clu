@@ -15,8 +15,8 @@ void test1_opcontrol()
   // Set up screen stuff
   // vexDelay(5000);
   
-  // clu_auto_current().run();
-  clu_skills_current().run();
+  clu_auto_current().run();
+  // clu_skills_current().run();
   
   programmers_opcontrol();
 }
