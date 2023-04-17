@@ -52,22 +52,22 @@ vex::analog_in mode_switch(Brain.ThreeWirePort.F);
 
 // Drive Tuning
 PID::pid_config_t drive_pid_cfg = {
-    .p = .0575,
+    .p = .015,
     .i = 0, 
-    .d = 0,
+    .d = .008,
     .deadband = 2,
     .on_target_time = 0.2
 };
 
 FeedForward::ff_config_t drive_ff_cfg = {
-    .kS = 0.07,
-    .kV =.011, // 0.014205,
-    .kA = 0.0015
+    .kS = 0.03,
+    .kV =.012,    //.0138, 
+    .kA = 0.001
 };
 
 MotionController::m_profile_cfg_t drive_fast_mprofile_cfg = {
-    .max_v = 40,// MAX = 48,
-    .accel = 145, // MAX = 200
+    .max_v = 60,// MAX = 60,
+    .accel = 100, // MAX = 200
     .pid_cfg = drive_pid_cfg,
     .ff_cfg = drive_ff_cfg
 };
@@ -114,16 +114,16 @@ MotionController drive_fast_mprofile(drive_fast_mprofile_cfg), drive_slow_mprofi
 
 robot_specs_t config = {
     .robot_radius = 10,
-    .odom_wheel_diam = 6.374,
+    .odom_wheel_diam = 2.731, //6.374, // OLD - MOTOR ENCODERS
     .odom_gear_ratio = 1, // .44    16:12
-    .dist_between_wheels = 10.24,
+    .dist_between_wheels = 10.469, //10.24, // OLD - MOTOR ENCODERS
 
     .drive_correction_cutoff = 4,
 
     .drive_feedback = &drive_fast_mprofile,
     .turn_feedback = new PIDFF(turn_pid_cfg, turn_ff_cfg),
     .correction_pid = {
-        .p = .012,
+        .p = .02, //.012
         .i = 0,
         .d = 0.0012
     }
@@ -131,19 +131,19 @@ robot_specs_t config = {
 
 // Flywheel Tuning
 FeedForward::ff_config_t flywheel_ff_cfg = {
-  .kV =  0.0003
+  .kV =  0.000281
 };
 
 PID::pid_config_t flywheel_pid_cfg = {
-    .p = .001,
+    .p = .002,
     // .d = 0.000015,
 };
 
 // ======== SUBSYSTEMS ========
 
 
-// OdometryTank odometry_sys(left_enc, right_enc, config);
-OdometryTank odometry_sys(left_motors, right_motors, config, &imu);
+OdometryTank odometry_sys(left_enc, right_enc, config, &imu);
+// OdometryTank odometry_sys(left_motors, right_motors, config, &imu);
 
 TankDrive drive_sys(left_motors, right_motors, config, &odometry_sys);
 

@@ -52,11 +52,13 @@ void tune_odometry_wheel_diam()
     if (main_controller.ButtonA.pressing())
     {
         // SET THESE BACK TO LEFT ENC RIGHT ENC
-        left_motors.resetPosition();
-        right_motors.resetPosition();
+        // left_motors.resetPosition();
+        // right_motors.resetPosition();
+        left_enc.resetRotation();
+        right_enc.resetRotation();
     }
-    // double avg = (fabs(left_enc.rotation(rev)) + fabs(right_enc.rotation(rev))) / 2.0;
-    double avg = (fabs(left_motors.position(rev)) + fabs(right_motors.position(rev))) / 2.0;
+    double avg = (fabs(left_enc.rotation(rev)) + fabs(right_enc.rotation(rev))) / 2.0;
+    // double avg = (fabs(left_motors.position(rev)) + fabs(right_motors.position(rev))) / 2.0;
     if (fabs(avg) < .1)
     {
         printf("Diam: 0\n");
@@ -77,13 +79,13 @@ void tune_odometry_wheelbase()
     int times_to_turn = 5;
     if (main_controller.ButtonA.pressing())
     {
-        // left_enc.resetRotation();
-        // right_enc.resetRotation();
-        left_motors.resetPosition();
-        right_motors.resetPosition();
+        left_enc.resetRotation();
+        right_enc.resetRotation();
+        // left_motors.resetPosition();
+        // right_motors.resetPosition();
     }
-    // double radius =  ENC_DIFF_IN(left_enc, right_enc) / ((double)times_to_turn * 2 * PI); // radius = arclength / theta
-    double radius = ENC_DIFF_IN(left_motors, right_motors) / ((double)times_to_turn * 2 * PI); // radius = arclength / theta
+    double radius =  ENC_DIFF_IN(left_enc, right_enc) / ((double)times_to_turn * 2 * PI); // radius = arclength / theta
+    // double radius = ENC_DIFF_IN(left_motors, right_motors) / ((double)times_to_turn * 2 * PI); // radius = arclength / theta
 
     double wheelbase = 2 * radius;
 
@@ -176,11 +178,15 @@ void tune_drive_ff_ks(DriveType dt)
 void tune_drive_ff_kv(DriveType dt, double ks)
 {
     static bool new_press = true;
+    static timer tmr;
+
+    static int start_delay_ms = 2000;
 
     if (main_controller.ButtonA.pressing())
     {
         if (new_press)
         {
+            tmr.reset();
             reset_avg_counter();
             new_press = false;
         }
@@ -198,7 +204,9 @@ void tune_drive_ff_kv(DriveType dt, double ks)
             vel = odometry_sys.get_angular_speed_deg();
         }
 
-        double kv = (0.5 - ks) / continuous_avg(vel);
+        double kv = 0;
+        if(tmr.time(msec) > start_delay_ms)
+            kv = (0.5 - ks) / continuous_avg(vel);
 
         main_controller.Screen.clearScreen();
         main_controller.Screen.setCursor(1, 1);
@@ -219,12 +227,15 @@ void tune_drive_pid(DriveType dt)
     if (main_controller.ButtonB.pressing())
         odometry_sys.set_position();
 
-    // auto pos = odometry_sys.get_position();
-    // printf("%.2f, %.2f, %.2f\n", pos.x, pos.y, pos.rot);
+    
 
     if (main_controller.ButtonA.pressing())
     {
-        if (dt == DRIVE && (done || drive_sys.drive_to_point(0, 24, fwd, drive_fast_mprofile)))
+        auto pos = odometry_sys.get_position();
+        printf("%.2f, %.2f, %.2f, ", pos.x, pos.y, pos.rot);
+        printf("accel: %2f\n", odometry_sys.get_accel());
+
+        if (dt == DRIVE && (done || drive_sys.drive_to_point(0, 48, fwd, drive_fast_mprofile)))
         {
             auto pos = odometry_sys.get_position();
             printf("%.2f, %.2f, %.2f\n", pos.x, pos.y, pos.rot);
@@ -354,6 +365,7 @@ void tune_flywheel_ff()
     double flywheel_target_pct = .85;
     static bool new_press = true;
     static int counter = 0;
+    static timer tmr;
     if (main_controller.ButtonA.pressing())
     {
         counter++;
@@ -362,6 +374,7 @@ void tune_flywheel_ff()
             reset_avg_counter();
             new_press = false;
             printf("rpm kv");
+            tmr.reset();
         }
 
         flywheel_sys.spin_raw(flywheel_target_pct);
@@ -371,11 +384,16 @@ void tune_flywheel_ff()
             return;
         }
 
-        double rawRPM = 18.0 * flywheel_motors.velocity(velocityUnits::rpm);
+        double kv = 0;
 
-        double rpm = rawRPM; // flywheel_sys.getRPM();
-        double kv = flywheel_target_pct / continuous_avg(rpm);
+        if (tmr.time(sec) > 5.0)
+        {
 
+            double rawRPM = 18.0 * flywheel_motors.velocity(velocityUnits::rpm);
+
+            double rpm = rawRPM; // flywheel_sys.getRPM();
+            kv = flywheel_target_pct / continuous_avg(rpm);
+        }
         main_controller.Screen.clearScreen();
         main_controller.Screen.setCursor(1, 1);
         main_controller.Screen.print("kv: %f", kv);
@@ -402,6 +420,8 @@ void tune_flywheel_pid()
                                             { setpt_rpm += 50; });
         main_controller.ButtonLeft.pressed([]()
                                            { setpt_rpm -= 50; });
+                                           
+        first_run = false;
     }
 
     static bool new_press = true;

@@ -1,35 +1,20 @@
 #include "competition/autonomous_clu.h"
+#include "competition/autonomous.h"
 #include "robot-config.h"
 #include "automation.h"
 #include "vision.h"
 
-#define TURN_SPEED 0.6
-#define INTAKE_VOLT 12
-#define SHOOTING_RPM 3400
-#define THRESHOLD_RPM 50
-#define SINGLE_SHOT_TIME 0.1
-#define SINGLE_SHOT_VOLT 6
-#define SINGLE_SHOT_RECOVER_DELAY_MS 200
-#define TRI_SHOT_TIME 1
-#define TRI_SHOT_VOLT 9
-#define TRI_SHOT_RECOVER_DELAY_MS 200
+const double TURN_SPEED = 0.6;
+const double INTAKE_VOLT = 12;
+const int  SHOOTING_RPM = 3400;
+const int THRESHOLD_RPM = 100;
+const double SINGLE_SHOT_TIME = 0.05;
+const double SINGLE_SHOT_VOLT = 12;
+const int SINGLE_SHOT_RECOVER_DELAY_MS = 1000;
+const double TRI_SHOT_TIME = 1;
+const double TRI_SHOT_VOLT = 9;
+const int TRI_SHOT_RECOVER_DELAY_MS = 200;
 
-// drive commands
-#define DRIVE_TO_POINT_FAST(x,y,dir) (new DriveToPointCommand(drive_sys, drive_fast_mprofile, x, y, directionType::dir))
-#define DRIVE_TO_POINT_SLOW(x,y,dir) (new DriveToPointCommand(drive_sys, drive_slow_mprofile, x, y, directionType::dir))
-#define DRIVE_FORWARD_FAST(in, dir) (new DriveForwardCommand(drive_sys, drive_fast_mprofile, in, directionType::dir))
-#define DRIVE_FORWARD_SLOW(in, dir) (new DriveForwardCommand(drive_sys, drive_slow_mprofile, in, directionType::dir))
-
-// turn commands
-#define TURN_TO_HEADING(dir) (new TurnToHeadingCommand(drive_sys, *config.turn_feedback, dir, TURN_SPEED))
-#define TURN_DEGREES(dir) (new TurnDegreesCommand(drive_sys, *config.turn_feedback, dir, TURN_SPEED))
-#define TURN_TO_POINT(x, y) (new TurnToPointCommand(drive_sys, odometry_sys, *config.turn_feedback, {x, y}))
-
-// shooting commands
-#define AUTO_AIM (new VisionAimCommand(true, 150, 5))
-#define WAIT_FOR_FLYWHEEL (new WaitUntilUpToSpeedCommand(flywheel_sys, THRESHOLD_RPM))
-#define SHOOT_DISK (new ShootCommand(intake, SINGLE_SHOT_TIME, SINGLE_SHOT_VOLT))
-#define TRI_SHOT_DISK (new ShootCommand(intake, TRI_SHOT_TIME, TRI_SHOT_VOLT))
 
 static void add_single_shot_cmd(CommandController &controller, double timeout=0.0)
 {
@@ -50,9 +35,348 @@ static void add_tri_shot_cmd(CommandController &controller, double timeout=0.0)
     controller.add_delay(TRI_SHOT_RECOVER_DELAY_MS);
 }
 
+CommandController clu_auto_current()
+{
+    CommandController cmd;
+
+    cmd.add({
+
+        // Init
+        new OdomSetPosition(odometry_sys, {.x=128, .y=84, .rot=180}),
+        new SpinRPMCommand(flywheel_sys, 3250),
+        new FlapDownCommand(),
+        
+        // Drive to intake 1 (3rd disc)
+        START_INTAKE,
+        DRIVE_TO_POINT_FAST(108, 84, fwd),
+        
+        // Turn & Shoot 1 (3 discs)
+        TURN_TO_HEADING(155),
+        DELAY(500), // Finish indexing
+        STOP_INTAKE,
+        // AUTO_AIM,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        new StartIntakeCommand(intake, -12),
+
+        
+        // Turn and intake 2 (2 discs)
+        new SpinRPMCommand(flywheel_sys, 3200),
+        TURN_TO_HEADING(227),
+        START_INTAKE,
+        DRIVE_TO_POINT_FAST(84.7,61,fwd),
+
+        // Shoot 2 (2 discs)
+        TURN_TO_HEADING(135),
+        STOP_INTAKE,
+        // AUTO_AIM, // CHANGE TO CHECK_AIM
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        new StartIntakeCommand(intake, -12),
+
+        
+        // Turn & intake along barrier (3 discs)
+        new SpinRPMCommand(flywheel_sys, 3600),
+        TURN_TO_HEADING(338),
+        DRIVE_TO_POINT_SLOW(90.2,58.3,fwd),
+        START_INTAKE,
+        
+        DRIVE_TO_POINT_SLOW(120,58.7,fwd),
+        DRIVE_TO_POINT_SLOW(129,57,fwd),
+        
+        // Turn and shoot 3 (3 discs)
+        TURN_TO_HEADING(150),
+        STOP_INTAKE,
+        // AUTO_AIM,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+
+        // Turn and go to roller
+        TURN_TO_HEADING(90),
+        DRIVE_TO_POINT_FAST(123,108,fwd),
+        TURN_TO_HEADING(0),
+        // TODO roller code
+        
+        
+    });
+
+    return cmd;
+}
+
+CommandController clu_auto_rush_current()
+{
+    CommandController cmd;
+
+    cmd.add({
+        // Init
+        new OdomSetPosition(odometry_sys, {.x=0, .y=0, .rot=0}),
+        new SpinRPMCommand(flywheel_sys, 3600),
+        new FlapDownCommand(),
+
+        // Drive to 3 & intake
+        START_INTAKE,
+        DRIVE_TO_POINT_FAST(0, 0, fwd),
+        DELAY(2000), // Index
+        STOP_INTAKE,
+        new SpinRPMCommand(flywheel_sys, 3600), // Preset for shoot
+        DRIVE_TO_POINT_FAST(0, 0, rev),
+
+        // Turn & shoot (3 discs)
+        TURN_TO_HEADING(0),
+        AUTO_AIM,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+
+        // Intake 2 (3 discs)
+        TURN_TO_HEADING(0),
+        START_INTAKE,
+        DRIVE_TO_POINT_FAST(0, 0, fwd),
+        new SpinRPMCommand(flywheel_sys, 3600), // Preset for shoot
+        TURN_TO_HEADING(0),
+        STOP_INTAKE,
+
+        // Shoot 2 (3 discs)
+        AUTO_AIM,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+
+        // Intake 3 along barrier (3 discs)
+        TURN_TO_HEADING(0),
+        START_INTAKE,
+        DRIVE_TO_POINT_SLOW(0, 0, fwd),
+        new SpinRPMCommand(flywheel_sys, 3600), // Preset for shoot
+        TURN_TO_HEADING(0),
+        STOP_INTAKE,
+
+        // Shoot 3 (3 discs)
+        AUTO_AIM,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+
+        // Intake 4 (preloads, 2 discs)
+        TURN_TO_HEADING(0),
+        START_INTAKE,
+        new SpinRPMCommand(flywheel_sys, 3600), // Preset for shoot
+        DRIVE_TO_POINT_FAST(0,0,fwd),
+        TURN_TO_HEADING(0),
+        STOP_INTAKE,
+
+        // Shoot 4 (2 discs)
+        AUTO_AIM,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+
+        // Drive to Roller
+        TURN_TO_HEADING(0),
+        DRIVE_TO_POINT_FAST(0, 0, fwd),
+        TURN_TO_HEADING(0),
+
+
+        // Roller
+        DRIVE_FORWARD_FAST(0, fwd)->withTimeout(2),
+        DRIVE_FORWARD_FAST(0, rev),
+        // DRIVE_FORWARD_FAST(0, fwd)->withTimeout(2),
+        // DRIVE_FORWARD_FAST(0, rev),
+
+        TURN_TO_HEADING(0),
+
+        // END
+    });
+
+    return cmd;
+}
+
+CommandController clu_skills_current()
+{
+    CommandController cmd;
+    cmd.add({
+        new OdomSetPosition(odometry_sys, {.x = 132, .y = 90, .rot = 90.0}),
+        new SpinRPMCommand(flywheel_sys, 3600),
+        
+        // Drive to intake 1 (3rd disc)
+        START_INTAKE,
+        DRIVE_TO_POINT_FAST(130, 132, fwd),
+        TURN_TO_HEADING(180.0),
+        STOP_INTAKE,
+        DRIVE_TO_POINT_FAST(84, 132, fwd),
+        
+        // Shoot 1 (3 discs)
+        TURN_TO_HEADING(180),
+        new SpinRPMCommand(flywheel_sys, 3600),
+        // AUTO_AIM,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(500),
+        
+        
+        // Drive to intake 2 (3 stack)
+        TURN_TO_HEADING(311),
+        START_INTAKE,
+        DRIVE_TO_POINT_SLOW(114, 94, fwd),
+        TURN_TO_HEADING(160),
+        STOP_INTAKE,
+
+        // Shoot 2 (3 discs)
+        new SpinRPMCommand(flywheel_sys, 3600),
+        // AUTO_AIM,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(500),
+        
+        // Drive to Intake 3 (3 discs)
+        TURN_TO_HEADING(90),
+        START_INTAKE,
+        DRIVE_TO_POINT_FAST(114.5, 120.4, fwd),
+        TURN_TO_HEADING(221),
+        DRIVE_TO_POINT_FAST(65.1, 74.6, fwd),
+        TURN_TO_HEADING(136.0),
+        STOP_INTAKE,
+
+        // shoot 3 (3 discs)
+        new SpinRPMCommand(flywheel_sys, 3600),
+        AUTO_AIM,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(500),
+
+        /*
+
+        // Intake 4 (3 stack)
+        TURN_TO_HEADING(75.0),
+        START_INTAKE,
+        DRIVE_TO_POINT_FAST(82.31035, 109.586205, fwd),
+        TURN_TO_HEADING(525.0),
+        STOP_INTAKE,
+
+        // Shoot 4 (3 discs)
+        // new SpinRPMCommand(flywheel_sys, 3600),
+        AUTO_AIM,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(500),
+
+        // Intake 5
+        TURN_TO_HEADING(225.0),
+        START_INTAKE,
+        DRIVE_TO_POINT_FAST(24.86207, 49.965515, fwd),
+        TURN_TO_HEADING(95.0),
+        STOP_INTAKE,
+        
+        // Shoot 5 (3 discs)
+        // new SpinRPMCommand(flywheel_sys, 3600),
+        AUTO_AIM,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(500),
+
+        // Intake 6 (3 discs along barrier)
+        TURN_TO_HEADING(105.0),
+        DRIVE_TO_POINT_FAST(13.034482, 82.55172, fwd),
+        TURN_TO_HEADING(15.0),
+        START_INTAKE,
+        DRIVE_TO_POINT_FAST(42.965515, 86.17242, fwd),
+        TURN_TO_HEADING(120.0),
+        STOP_INTAKE,
+
+        // Shoot 6 (3 discs center barrier)
+        // new SpinRPMCommand(flywheel_sys, 3600),
+        AUTO_AIM,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(500),
+
+        // Intake 7 (3 discs along barrier)
+        TURN_TO_HEADING(355.0),
+        START_INTAKE,
+        DRIVE_TO_POINT_FAST(50.206898, 86.17242, fwd),
+        TURN_TO_HEADING(85.0),
+
+        // Shoot 7 (3 discs close to goal)
+        // new SpinRPMCommand(flywheel_sys, 3600),
+        AUTO_AIM,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
+        SHOOT_DISK,
+        DELAY(500),
+
+        // Drive to roller 
+        TURN_TO_HEADING(180.0),
+        DRIVE_TO_POINT_FAST(50.931034, 121.896545, fwd),
+         
+        // TODO Roller and endgame
+        TURN_TO_HEADING(0),
+        DRIVE_TO_POINT_FAST(122.86207, 123.344826, fwd),
+
+        new EndgameCommand(endgame_solenoid)
+        */
+    });
+
+    return cmd;
+}
+
+
 /*
 Auto Non-loader side
-JOEBOT
 Map from page 40 of the game manual
 
 (R) = Red Hoop, Blue Zone
@@ -73,7 +397,7 @@ Map from page 40 of the game manual
  Human Instructions:
  Align robot to specified place and angle using NON LOADER SIDE AUTO jig
 */
-CommandController auto_non_loader_side(){
+CommandController clu_auto_wv(){
 
     #define PAUSE return nlsa;
     CommandController nlsa;
@@ -178,7 +502,7 @@ Map from page 40 of the game manual
  Human Instructions:
  Align robot to specified place and angle using NON LOADER SIDE SKILLS jig
 */
-CommandController prog_skills_non_loader_side(){
+CommandController clu_skills_wv(){
 
     // Setup
     vision_enabled = true;

@@ -1,4 +1,5 @@
 #include "testing.h"
+#include "tuning.h"
 #include "vex.h"
 #include "robot-config.h"
 #include "competition/autonomous_clu.h"
@@ -12,14 +13,10 @@ void test1_opcontrol()
   while(imu.isCalibrating()){}
 
   // Set up screen stuff
-  vexDelay(5000);
-
-  auto_non_loader_side().run();
-  // prog_skills_non_loader_side().run();
+  // vexDelay(5000);
   
-  // CommandController cmd;
-  // cmd.add(new SpinRollerCommand(position_t{.x=0,.y=0,.rot=90}));
-  // cmd.run();
+  // clu_auto_current().run();
+  clu_skills_current().run();
   
   programmers_opcontrol();
 }
@@ -34,27 +31,41 @@ void tuning_opcontrol()
   while (imu.isCalibrating())
   {
   }
-  // tune_odometry_wheel_diam();
-  // tune_odometry_wheelbase();
-  // tune_flywheel_ff();
-  // tune_drive_ff_ks(TURN);
-  // tune_drive_ff_kv(TURN, 0.12);
-  // tune_drive_motion_maxv(TURN);
-  // tune_drive_motion_accel(TURN, 700);
-  // tune_drive_pid(TURN);
+  while(true)
+  {
+    // tune_odometry_wheel_diam();
+    // tune_odometry_wheelbase();
+    // tune_flywheel_ff();
+    tune_flywheel_pid();
+    // tune_drive_ff_ks(DRIVE);
+    // tune_drive_ff_kv(DRIVE, 0.03);
+    // tune_drive_motion_maxv(TURN);
+    // tune_drive_motion_accel(TURN, 700);
+    // tune_drive_pid(DRIVE);
 
-  // auto pos = odometry_sys.get_position();
-  // main_controller.Screen.clearScreen();
-  // main_controller.Screen.setCursor(0, 0);
-  // main_controller.Screen.print("(%.3f, %.3f) : %.3f", pos.x, pos.y, pos.rot);
-  // printf("X: %f, Y: %f, R: %f\n", pos.x, pos.y, pos.rot);
-  // motion_t cur_motion = turn_fast_mprofile.get_motion();
-  // double s = (cur_motion.pos != 0? 24 + cur_motion.pos : 0);
-  // double s = cur_motion.pos + 180; //(cur_motion.pos != 0? 90 + cur_motion.pos : 0) + 90;
-  // printf("%.2f %.2f %.2f %.2f %.2f %.2f %.2f\n", tmr.time(sec), s, pos.rot, fabs(cur_motion.vel), fabs(odometry_sys.get_angular_speed_deg()), cur_motion.accel, odometry_sys.get_angular_accel_deg());
+    // if(main_controller.ButtonR1.pressing())
+    //   intake.spin(directionType::rev, 12, volt);
+    // else
+    //   intake.stop();
 
-  // if(main_controller.ButtonX.pressing())
-  //   drive_sys.drive_tank(.11, -.11);
+    // auto pos = odometry_sys.get_position();
+    // main_controller.Screen.clearScreen();
+    // main_controller.Screen.setCursor(0, 0);
+    // main_controller.Screen.print("(%.3f, %.3f) : %.3f", pos.x, pos.y, pos.rot);
+    // printf("X: %f, Y: %f, R: %f\n", pos.x, pos.y, pos.rot);
+    // motion_t cur_motion = turn_fast_mprofile.get_motion();
+    // double s = (cur_motion.pos != 0? 24 + cur_motion.pos : 0);
+    // double s = cur_motion.pos + 180; //(cur_motion.pos != 0? 90 + cur_motion.pos : 0) + 90;
+    // printf("%.2f %.2f %.2f %.2f %.2f %.2f %.2f\n", tmr.time(sec), s, pos.rot, fabs(cur_motion.vel), fabs(odometry_sys.get_angular_speed_deg()), cur_motion.accel, odometry_sys.get_angular_accel_deg());
+
+    // if(main_controller.ButtonX.pressing())
+    //   drive_sys.drive_tank(.11, -.11);
+
+    // DEBUG
+    // printf("left enc: %f, right enc: %f\n", left_enc.rotation(rotationUnits::rev), right_enc.rotation(rotationUnits::rev));
+
+    vexDelay(20);
+  }
 }
 
 void programmers_opcontrol()
@@ -77,8 +88,8 @@ void programmers_opcontrol()
     else
       drive_sys.drive_arcade(main_controller.Axis3.position() / 200.0, main_controller.Axis1.position() / 200.0);
     
-    Pepsi rol = scan_roller();
-    printf("roller: %s\n", rol==RED?"red":rol==BLUE?"blue":"neutral");
+    // Pepsi rol = scan_roller();
+    // printf("roller: %s\n", rol==RED?"red":rol==BLUE?"blue":"neutral");
     printf("X: %2f, Y: %2f, R: %2f\n", pos.x, pos.y, pos.rot);
 
     // Flap Controls

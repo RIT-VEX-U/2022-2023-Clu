@@ -46,6 +46,10 @@ void opcontrol()
 {
   // test1_opcontrol();
   programmers_opcontrol();
+  test1_opcontrol();
+  // programmers_opcon1trol();
+  // tuning_opcontrol();
+
   // select_mode();
   // printf("angle: %d mode: %d\n",mode_switch.value(pct), curr_mode);
   // return;
@@ -72,7 +76,7 @@ void opcontrol()
 #define INTAKE_NORMAL 9.5
 #define INTAKE_OVERFILL 9.5
 #define FLYWHEEL_NORMAL 4000
-#define FLYWHEEL_OVERFILL 3000
+#define FLYWHEEL_OVERFILL 2650
 
   static std::atomic<double> cur_intake_volt(INTAKE_NORMAL);
   static std::atomic<double> cur_flywheel_rpm(FLYWHEEL_NORMAL);
