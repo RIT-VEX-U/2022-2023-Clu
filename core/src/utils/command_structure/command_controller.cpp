@@ -84,6 +84,8 @@ void CommandController::run() {
       }
     }
 
+    delete next_cmd;
+
     printf("Finished Command %d. Timed out: %s\n", command_count, command_timed_out ? "true" : "false" );
     fflush(stdout);
     command_count++;

@@ -30,7 +30,7 @@ extern vex::digital_out flapup_solenoid;
 extern CustomEncoder left_enc, right_enc, mid_enc;
 extern inertial imu;
 
-extern vex::optical colorSensor;
+extern vex::optical roller_sensor;
 
 extern vex::analog_in mode_switch;
 

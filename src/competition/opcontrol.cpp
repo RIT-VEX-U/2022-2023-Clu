@@ -44,7 +44,7 @@ void tripleshot()
 
 void opcontrol()
 {
-  // test1_opcontrol();
+  test1_opcontrol();
   // programmers_opcontrol();
   // tuning_opcontrol();
 
@@ -112,7 +112,7 @@ void opcontrol()
       cur_intake_volt = INTAKE_FLAPDOWN;
       cur_flywheel_rpm = FLYWHEEL_FLAPDOWN;
     }
-    
+
     flywheel_sys.spinRPM(cur_flywheel_rpm);
   });
 

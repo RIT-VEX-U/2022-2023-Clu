@@ -15,7 +15,7 @@ void test1_opcontrol()
   // Set up screen stuff
   // vexDelay(5000);
   
-  clu_auto_current().run();
+  // clu_auto_current().run();
   // clu_skills_current().run();
   
   programmers_opcontrol();
@@ -90,7 +90,12 @@ void programmers_opcontrol()
     
     // Pepsi rol = scan_roller();
     // printf("roller: %s\n", rol==RED?"red":rol==BLUE?"blue":"neutral");
-    printf("X: %2f, Y: %2f, R: %2f\n", pos.x, pos.y, pos.rot);
+    // printf("X: %2f, Y: %2f, R: %2f\n", pos.x, pos.y, pos.rot);
+    Pepsi rol = get_roller_scored();
+    string rol_str = (rol == RED) ? "Red" : (rol == BLUE) ? "Blue" : "Neutral";
+    printf("Scored: %s, color sensor: %f\n", rol_str.c_str(), roller_sensor.hue());
+    roller_sensor.setLightPower(100, pct);
+    
 
     // Flap Controls
     static bool flap_is_up = false;

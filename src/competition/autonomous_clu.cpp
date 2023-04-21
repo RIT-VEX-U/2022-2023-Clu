@@ -115,7 +115,7 @@ CommandController clu_auto_current()
         DRIVE_TO_POINT_FAST(124,109,fwd),
         TURN_TO_HEADING(0),
         // TODO roller code
-        
+        new SpinRollerCommand()
         /**/
     });
 

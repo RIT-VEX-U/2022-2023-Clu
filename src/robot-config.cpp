@@ -47,6 +47,7 @@ CustomEncoder right_enc(Brain.ThreeWirePort.C, 2048);
 
 inertial imu(PORT12);
 vex::analog_in mode_switch(Brain.ThreeWirePort.F);
+optical roller_sensor(PORT9);
 
 // ======== UTILS ========
 

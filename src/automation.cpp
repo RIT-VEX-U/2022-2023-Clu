@@ -14,6 +14,26 @@ void flap_down()
 {
   flapup_solenoid.set(true);
 }
+
+#define BLUE_HUE 69
+#define RED_HUE 36
+#define NEUTRAL_BAND 8
+
+Pepsi get_roller_scored()
+{
+  static const double HUE_THRESH = (BLUE_HUE + RED_HUE) / 2.0;
+  static const bool IS_RED_GREATER = RED_HUE > BLUE_HUE;
+
+  double hue = roller_sensor.hue();
+
+  if(hue > HUE_THRESH - NEUTRAL_BAND && hue < HUE_THRESH + NEUTRAL_BAND)
+    return NEUTRAL;
+
+  if((hue > HUE_THRESH && IS_RED_GREATER) || (hue < HUE_THRESH && !IS_RED_GREATER))
+    return BLUE;
+  
+  return RED;
+}
 /**
  * Construct a FlapUpCommand
  * when run it flaps the flap up
@@ -49,6 +69,14 @@ SpinRollerCommand::SpinRollerCommand(position_t align_pos): align_pos(align_pos)
 
 bool SpinRollerCommand::run()
 {
+  CommandController cmd;
+
+  cmd.add({
+    (new DriveForwardCommand(drive_sys, drive_fast_mprofile, 12, directionType::fwd))->withTimeout(0.5),
+    (new DelayCommand(100)),
+  });
+  
+  cmd.run();
 
   vexDelay(100);
   Pepsi cur_roller = scan_roller();
@@ -59,18 +87,16 @@ bool SpinRollerCommand::run()
     return true;
   }
 
-  CommandController cmd;
   cmd.add({
-          (new DriveForwardCommand(drive_sys, drive_fast_mprofile, 12, directionType::fwd))->withTimeout(0.5),
-           (new DelayCommand(100)),
-           (new OdomSetPosition(odometry_sys, align_pos)),
+          
+          //  (new OdomSetPosition(odometry_sys, align_pos)),
            (new DriveForwardCommand(drive_sys, drive_fast_mprofile, 6, directionType::rev))
   });
 
   cmd.run();
 
-  if(!vision_enabled && ++roller_count >= num_roller_fallback)
-    return true;
+  // if(!vision_enabled && ++roller_count >= num_roller_fallback)
+  //   return true;
 
   return false;
 }
