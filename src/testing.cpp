@@ -74,7 +74,7 @@ void programmers_opcontrol()
   intake.stop();
 
   // flywheel_sys.spinRPM(3800);
-  VisionAimCommand visaim(false, 140, 5);
+  VisionAimCommand visaim(false, 155, 10);
   position_t pos;
   main_controller.Screen.clearScreen();
   while (true)

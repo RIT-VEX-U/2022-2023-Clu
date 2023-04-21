@@ -16,7 +16,7 @@
 
 // shooting commands
 #define SPIN_FW_AT(rpm) (new SpinRPMCommand(flywheel_sys, rpm))
-#define AUTO_AIM (new VisionAimCommand(true, 150, 5))
+#define AUTO_AIM (new VisionAimCommand(AIM_ODOM_FALLBACK, AIM_CENTER, AIM_FALLBACK_DEGREES))
 #define WAIT_FOR_FLYWHEEL (new WaitUntilUpToSpeedCommand(flywheel_sys, THRESHOLD_RPM))
 #define SHOOT_DISK (new ShootCommand(intake, SINGLE_SHOT_TIME, SINGLE_SHOT_VOLT))
 #define TRI_SHOT_DISK (new ShootCommand(intake, TRI_SHOT_TIME, TRI_SHOT_VOLT))

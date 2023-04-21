@@ -45,7 +45,7 @@ void tripleshot()
 void opcontrol()
 {
   // test1_opcontrol();
-  // programmers_opcon1trol();
+  // programmers_opcontrol();
   // tuning_opcontrol();
 
   // select_mode();
@@ -73,11 +73,13 @@ void opcontrol()
 
 #define INTAKE_NORMAL 9.5
 #define INTAKE_OVERFILL 9.5
+#define INTAKE_FLAPDOWN 8.5
 #define FLYWHEEL_NORMAL 3200
 #define FLYWHEEL_OVERFILL 2650
+#define FLYWHEEL_FLAPDOWN 3250
 
   static std::atomic<double> cur_intake_volt(INTAKE_NORMAL);
-  static std::atomic<double> cur_flywheel_rpm(FLYWHEEL_NORMAL);
+  static std::atomic<int> cur_flywheel_rpm(FLYWHEEL_NORMAL);
 
   // Intake - R1
   main_controller.ButtonR1.pressed([](){ intake.spin(reverse, 12, volt); });
@@ -90,15 +92,34 @@ void opcontrol()
   // Flap - Y
   main_controller.ButtonY.pressed([]()
   {
-    static bool flapUp = false;
-    flapUp = !flapUp;
-    flapup_solenoid.set(flapUp); 
+    static bool flapDown = false;
+    static double saved_intake = INTAKE_NORMAL;
+    static int saved_flywheel = FLYWHEEL_NORMAL;
+    flapDown = !flapDown;
+    flapup_solenoid.set(flapDown); 
+
+    if(!flapDown)
+    {
+      // FLAP UP - restore last intake / flywheel
+      cur_intake_volt = saved_intake;
+      cur_flywheel_rpm = saved_flywheel;
+    } else
+    {
+      // FLAP DOWN - save the currrent and switch to flapdown mode
+      saved_intake = cur_intake_volt;
+      saved_flywheel = cur_flywheel_rpm;
+
+      cur_intake_volt = INTAKE_FLAPDOWN;
+      cur_flywheel_rpm = FLYWHEEL_FLAPDOWN;
+    }
+    
+    flywheel_sys.spinRPM(cur_flywheel_rpm);
   });
 
   // Single Shot - L2
   main_controller.ButtonL2.pressed([]()
   {
-    intake.spin(fwd, 9.5, volt);
+    intake.spin(fwd, cur_intake_volt, volt);
     vexDelay(SHOTLENGTH);
     intake.stop();
     vexDelay(DELAYLENGTH); 
@@ -127,18 +148,37 @@ void opcontrol()
   flap_up();
   timer tmr;
 
-  VisionAimCommand visaim(false, 140, 5);
+  VisionAimCommand visaim(false, 155, 5);
   int i = 0;
   double time = 0.0;
   // Periodic
   while (true)
   {
-
     // ========== DRIVING CONTROLS ==========
     if (!main_controller.ButtonX.pressing())
-      drive_sys.drive_tank(main_controller.Axis3.position() / 100.0, main_controller.Axis2.position() / 100.0);
+    {
+      // if (abs(main_controller.Axis3.position()) > 5 || abs(main_controller.Axis2.position()) > 5)
+      // {
+        drive_sys.drive_tank(main_controller.Axis3.position() / 100.0, main_controller.Axis2.position() / 100.0);
+      // }
+      // else
+      // {
+      //   static PID::pid_config_t brake_cfg {.p = .001};
+      //   static PID l_brake_pid(brake_cfg), r_brake_pid(brake_cfg);
+        
+      //   l_brake_pid.set_target(0);
+      //   r_brake_pid.set_target(0);
+      //   l_brake_pid.update(left_motors.velocity(velocityUnits::rpm));
+      //   r_brake_pid.update(right_motors.velocity(velocityUnits::rpm));
+        
+      //   drive_sys.drive_tank(l_brake_pid.get(), r_brake_pid.get());
+
+      // }
+    } 
     else
+    {
       visaim.run();
+    }
     // drive_sys.drive_arcade(main_controller.Axis3.position()/100.0, main_controller.Axis1.position()/100.0);
 
     // ========== MANIPULATING CONTROLS ==========

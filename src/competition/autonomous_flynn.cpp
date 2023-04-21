@@ -16,6 +16,9 @@ const double SINGLE_SHOT_VOLT =  6;
 const double SINGLE_SHOT_RECOVER_DELAY_MS = 1000;
 const double THRESHOLD_RPM = 150; 
 int glbl_vision_center = 135;
+const bool AIM_ODOM_FALLBACK = true;
+const int AIM_CENTER = 145;
+const int AIM_FALLBACK_DEGREES = 10;
 
 // #define DRIVE_TO_POINT_SLOW(x, y, dir) (new DriveToPointCommand(drive_sys, drive_slow_mprofile, x, y, directionType::dir))
 // #define DRIVE_TO_POINT_SLOW_PT(pt, dir) (new DriveToPointCommand(drive_sys, drive_slow_mprofile, pt, dir))

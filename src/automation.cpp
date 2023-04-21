@@ -189,17 +189,17 @@ bool PrintOdomContinousCommand::run()
   return false;
 }
 PID::pid_config_t vis_pid_cfg = {
-    .p = .003,
-    // .d = .0001,
-    .deadband = 5,
+    .p = .004,
+    .d = .0004,
+    .deadband = 10,
     .on_target_time = .2};
 
 FeedForward::ff_config_t vis_ff_cfg = {
-    .kS = 0.07};
+    .kS = 0.03};
 
 #define MIN_AREA 500
-#define MIN_VISION_AREA 114
-#define MAX_VISION_AREA 3158
+#define MIN_VISION_AREA 150
+#define MAX_VISION_AREA 4000
 #define MAX_SPEED 0.5
 
 VisionAimCommand::VisionAimCommand(bool odometry_fallback, int vision_center, int fallback_degrees)
