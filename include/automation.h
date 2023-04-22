@@ -189,6 +189,7 @@ public:
    */
   VisionAimCommand(bool odometry_fallback, int vision_center, int fallback_degrees);
 
+  int get_x();
   bool run() override;
   void on_timeout() override;
 
