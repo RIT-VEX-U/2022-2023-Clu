@@ -604,9 +604,19 @@ void tune_generic_pid(Feedback &pid2tune, double error_lower_bound, double error
 
 void tune_shooting()
 {
-    static int rpm = 0;
-    static double intake_volt = 0;
-    static double intake_time = 0;
+    static std::atomic<int> rpm(0);
+    static std::atomic<double> intake_volt(12);
+    static std::atomic<int> intake_time(0);
+    
+    // Flap control
+    main_controller.ButtonL1.pressed([](){
+        static bool isFlapUp = true;
+        isFlapUp = !isFlapUp;
+        if(isFlapUp)
+            flap_up();
+        else
+            flap_down();
+    });
 
     // Tuning RPM
     main_controller.ButtonUp.pressed([](){
@@ -627,10 +637,10 @@ void tune_shooting()
     });
 
     // Tuning intake
-    main_controller.ButtonX.pressed([](){ intake_volt += 0.5; });
-    main_controller.ButtonB.pressed([](){ intake_volt -= 0.5; });
-    main_controller.ButtonA.pressed([](){ intake_time += 100; });
-    main_controller.ButtonY.pressed([](){ intake_time -= 100; });
+    main_controller.ButtonX.pressed([](){ intake_volt = intake_volt + 0.5; });
+    main_controller.ButtonB.pressed([](){ intake_volt = intake_volt - 0.5; });
+    main_controller.ButtonA.pressed([](){ intake_time = intake_time + 25; });
+    main_controller.ButtonY.pressed([](){ intake_time = intake_time - 25; });
 
     // Single shot
     main_controller.ButtonL2.pressed([](){
@@ -647,10 +657,13 @@ void tune_shooting()
     main_controller.ButtonR1.pressed([](){ intake.spin(directionType::rev, 12, volt); });
     main_controller.ButtonR1.released([](){ intake.stop(); });
 
+    VisionAimCommand visaim(false, 0, 20);
 
     while(true)
     {
-        // printf("Volt: %1f, Time: %d, rpm: %d, centerX: %d", intake_volt, intake_time, rpm, )
-        vexDelay(20);
+        printf("Volt: %1f, Time: %d, rpm: %d, goalX: %d\n", (double)intake_volt, 
+                (int)intake_time, (int)rpm, (int)visaim.get_x());
+
+        vexDelay(100);
     }
 }

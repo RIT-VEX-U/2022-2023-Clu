@@ -15,9 +15,9 @@ void flap_down()
   flapup_solenoid.set(true);
 }
 
-#define BLUE_HUE 69
-#define RED_HUE 36
-#define NEUTRAL_BAND 8
+#define BLUE_HUE 82
+#define RED_HUE 70
+#define NEUTRAL_BAND 3
 
 Pepsi get_roller_scored()
 {
@@ -227,12 +227,10 @@ int VisionAimCommand::get_x(){
 
   int x_val = 0;
 
-  // If the camera isn't installed, move on to the next command
-  if (!cam.installed())
-    return true;
-  // If we have disabled vision on the screen, move on to the next command
-  if (!vision_enabled)
-    return true;
+  if(!cam.installed())
+  {
+    return 0;
+  }
 
   if(target_red){
     cam.takeSnapshot(RED_GOAL);
@@ -263,6 +261,13 @@ int VisionAimCommand::get_x(){
  */
 bool VisionAimCommand::run()
 {
+  // If the camera isn't installed, move on to the next command
+  if (!cam.installed() || !vision_enabled)
+  {
+    drive_sys.stop();
+    return true;
+  }
+  
   if (first_run)
   {
     stored_pos = odometry_sys.get_position();

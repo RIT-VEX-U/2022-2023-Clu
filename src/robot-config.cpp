@@ -159,7 +159,7 @@ std::string AutoNonLoaderSideDisplayName = "Auto Non Loader Side";
 std::string SkillsLoaderSideDisplayName = "Skills Loader Side";
 std::string SkillsNonLoaderSideDisplayName = "Skills Non Loader Side";
 
-bool target_red = false;
+bool target_red = true;
 bool vision_enabled = true;
 int num_roller_fallback = 2;
 

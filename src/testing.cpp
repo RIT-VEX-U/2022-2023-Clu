@@ -14,9 +14,10 @@ void test1_opcontrol()
 
   // Set up screen stuff
   // vexDelay(5000);
-  
+  vision_enabled = false;
   clu_auto_current().run();
   // clu_skills_current().run();
+  // tune_shooting();
   
   programmers_opcontrol();
 }

@@ -28,3 +28,4 @@ void tune_flywheel_distcalc();
 
 
 void tune_generic_pid(Feedback &pid2tune, double error_lower_bound, double error_upper_bound);
+void tune_shooting();
