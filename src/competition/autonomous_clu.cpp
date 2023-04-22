@@ -51,7 +51,7 @@ CommandController clu_auto_current()
         
         // Drive to intake 1 (3rd disc)
         START_INTAKE,
-        DRIVE_TO_POINT_FAST(108, 84, fwd),
+        DRIVE_TO_POINT_FAST(108, 83, fwd),
         
         // Turn & Shoot 1 (3 discs)
         TURN_TO_HEADING(155),
@@ -72,7 +72,7 @@ CommandController clu_auto_current()
         new SpinRPMCommand(flywheel_sys, 3100),
         TURN_TO_HEADING(227),
         START_INTAKE,
-        DRIVE_TO_POINT_FAST(84.7,61,fwd),
+        DRIVE_TO_POINT_FAST(85.4,60.4,fwd),
 
         // Shoot 2 (2 discs)
         TURN_TO_HEADING(135),
@@ -88,18 +88,19 @@ CommandController clu_auto_current()
         
         // Turn & intake along barrier (3 discs)
         new SpinRPMCommand(flywheel_sys, 3100),
-        TURN_TO_HEADING(338),
-        DRIVE_TO_POINT_SLOW(90.2,58.3,fwd),
+        TURN_TO_HEADING(356),
+        
+        DRIVE_TO_POINT_SLOW(99.6,58,fwd),
         START_INTAKE,
         
-        DRIVE_TO_POINT_SLOW(123,58,fwd),
-        DRIVE_TO_POINT_SLOW(128,57,fwd),
+        DRIVE_TO_POINT_SLOW(124.9,60.7,fwd),
+        DRIVE_TO_POINT_SLOW(133.6,59.1,fwd),
         
         // Turn and shoot 3 (3 discs)
-        TURN_TO_HEADING(150),
+        TURN_TO_HEADING(155),
         
-        DRIVE_TO_POINT_FAST(90,79,fwd),
-        TURN_TO_HEADING(150.5),
+        DRIVE_TO_POINT_FAST(98.1,81.4,fwd),
+        TURN_TO_HEADING(145),
         STOP_INTAKE,
         (new VisionAimCommand(true,135,10))->withTimeout(3),
         DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
@@ -110,13 +111,15 @@ CommandController clu_auto_current()
         SHOOT_DISK,
         DELAY(SINGLE_SHOT_RECOVER_DELAY_MS),
 
+        
         // Turn and go to roller
-        TURN_TO_HEADING(46),
-        DRIVE_TO_POINT_FAST(124,109,fwd),
+        TURN_TO_HEADING(54),
+        
+        DRIVE_TO_POINT_FAST(126,114,fwd),
         TURN_TO_HEADING(0),
         // TODO roller code
         new SpinRollerCommand()
-        /**/
+        
     });
 
     return cmd;

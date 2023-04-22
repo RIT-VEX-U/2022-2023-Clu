@@ -15,7 +15,7 @@ void test1_opcontrol()
   // Set up screen stuff
   // vexDelay(5000);
   
-  // clu_auto_current().run();
+  clu_auto_current().run();
   // clu_skills_current().run();
   
   programmers_opcontrol();
@@ -75,25 +75,30 @@ void programmers_opcontrol()
 
   // flywheel_sys.spinRPM(3800);
   VisionAimCommand visaim(false, 155, 10);
+  SpinRollerCommand rol_cmd;
   position_t pos;
   main_controller.Screen.clearScreen();
   while (true)
   {
     // Odometry Info
     pos = odometry_sys.get_position();
-
+    static bool hasfinished = false;
     // Vision Aim Tuning
-    if(main_controller.ButtonB.pressing())
+    if(main_controller.ButtonB.pressing())// && hasfinished == false && rol_cmd.run())
+    {
       visaim.run();
-    else
+      // hasfinished = true;
+    } else if (main_controller.ButtonB.pressing() == false)
+    {
+      // hasfinished = false;
       drive_sys.drive_arcade(main_controller.Axis3.position() / 200.0, main_controller.Axis1.position() / 200.0);
-    
+    }
     // Pepsi rol = scan_roller();
     // printf("roller: %s\n", rol==RED?"red":rol==BLUE?"blue":"neutral");
-    // printf("X: %2f, Y: %2f, R: %2f\n", pos.x, pos.y, pos.rot);
+    printf("X: %2f, Y: %2f, R: %2f\n", pos.x, pos.y, pos.rot);
     Pepsi rol = get_roller_scored();
     string rol_str = (rol == RED) ? "Red" : (rol == BLUE) ? "Blue" : "Neutral";
-    printf("Scored: %s, color sensor: %f\n", rol_str.c_str(), roller_sensor.hue());
+    // printf("Scored: %s, color sensor: %f\n", rol_str.c_str(), roller_sensor.hue());
     roller_sensor.setLightPower(100, pct);
     
 

@@ -119,7 +119,7 @@ robot_specs_t config = {
     .odom_gear_ratio = 1, // .44    16:12
     .dist_between_wheels = 10.469, //10.24, // OLD - MOTOR ENCODERS
 
-    .drive_correction_cutoff = 4,
+    .drive_correction_cutoff = 5,
 
     .drive_feedback = &drive_fast_mprofile,
     .turn_feedback = new PIDFF(turn_pid_cfg, turn_ff_cfg),
@@ -159,7 +159,7 @@ std::string AutoNonLoaderSideDisplayName = "Auto Non Loader Side";
 std::string SkillsLoaderSideDisplayName = "Skills Loader Side";
 std::string SkillsNonLoaderSideDisplayName = "Skills Non Loader Side";
 
-bool target_red = true;
+bool target_red = false;
 bool vision_enabled = true;
 int num_roller_fallback = 2;
 
