@@ -7,16 +7,15 @@
 
 void test1_opcontrol()
 {
-  // target_red = true;
-  // vision_enabled = true;
+  target_red = true;
+  vision_enabled = true;
   // Test1: Match Auto Testing
   while(imu.isCalibrating()){}
 
   // Set up screen stuff
   // vexDelay(5000);
-  vision_enabled = false;
-  clu_auto_current().run();
-  // clu_skills_current().run();
+  // clu_auto_current().run();
+  clu_skills_current().run();
   // tune_shooting();
   
   programmers_opcontrol();
@@ -79,6 +78,7 @@ void programmers_opcontrol()
   SpinRollerCommand rol_cmd;
   position_t pos;
   main_controller.Screen.clearScreen();
+  roller_sensor.setLightPower(100, pct);
   while (true)
   {
     // Odometry Info
@@ -94,14 +94,12 @@ void programmers_opcontrol()
       // hasfinished = false;
       drive_sys.drive_arcade(main_controller.Axis3.position() / 200.0, main_controller.Axis1.position() / 200.0);
     }
-    // Pepsi rol = scan_roller();
-    // printf("roller: %s\n", rol==RED?"red":rol==BLUE?"blue":"neutral");
-    printf("X: %2f, Y: %2f, R: %2f\n", pos.x, pos.y, pos.rot);
+
+    // Debug Out
     Pepsi rol = get_roller_scored();
-    string rol_str = (rol == RED) ? "Red" : (rol == BLUE) ? "Blue" : "Neutral";
-    // printf("Scored: %s, color sensor: %f\n", rol_str.c_str(), roller_sensor.hue());
-    roller_sensor.setLightPower(100, pct);
-    
+    string rol_str = (rol == RED) ? "R" : (rol == BLUE) ? "B" : "N";
+    printf("X: %2f, Y: %2f, R: %2f, Rol: %s|%0f\n",
+       pos.x, pos.y, pos.rot, rol_str.c_str(), roller_sensor.hue());    
 
     // Flap Controls
     static bool flap_is_up = false;

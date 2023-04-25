@@ -604,9 +604,9 @@ void tune_generic_pid(Feedback &pid2tune, double error_lower_bound, double error
 
 void tune_shooting()
 {
-    static std::atomic<int> rpm(0);
+    static std::atomic<int> rpm(flywheel_sys.getDesiredRPM());
     static std::atomic<double> intake_volt(12);
-    static std::atomic<int> intake_time(0);
+    static std::atomic<int> intake_time(75);
     
     // Flap control
     main_controller.ButtonL1.pressed([](){
@@ -661,8 +661,8 @@ void tune_shooting()
 
     while(true)
     {
-        printf("Volt: %1f, Time: %d, rpm: %d, goalX: %d\n", (double)intake_volt, 
-                (int)intake_time, (int)rpm, (int)visaim.get_x());
+        printf("Volt: %1f, Time: %d, rpm: %d, goalX: %d, rot: %1f\n", (double)intake_volt, 
+                (int)intake_time, (int)rpm, (int)visaim.get_x(), odometry_sys.get_position().rot);
 
         vexDelay(100);
     }

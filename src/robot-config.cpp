@@ -62,7 +62,7 @@ PID::pid_config_t drive_pid_cfg = {
 
 FeedForward::ff_config_t drive_ff_cfg = {
     .kS = 0.03,
-    .kV =.012,    //.0138, 
+    .kV =.0115,    //.0138, 
     .kA = 0.001
 };
 
