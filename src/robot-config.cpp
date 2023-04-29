@@ -45,9 +45,9 @@ digital_out flapup_solenoid(Brain.ThreeWirePort.G);
 CustomEncoder left_enc(Brain.ThreeWirePort.A, 2048);
 CustomEncoder right_enc(Brain.ThreeWirePort.C, 2048);
 
-inertial imu(PORT12);
+inertial imu(PORT15);
 vex::analog_in mode_switch(Brain.ThreeWirePort.F);
-optical roller_sensor(PORT9);
+optical roller_sensor(PORT4);
 
 // ======== UTILS ========
 
@@ -144,6 +144,7 @@ PID::pid_config_t flywheel_pid_cfg = {
 
 
 OdometryTank odometry_sys(left_enc, right_enc, config, &imu);
+// OdometryTank odometry_sys(left_enc, right_enc, config);
 // OdometryTank odometry_sys(left_motors, right_motors, config, &imu);
 
 TankDrive drive_sys(left_motors, right_motors, config, &odometry_sys);
@@ -160,7 +161,7 @@ std::string SkillsLoaderSideDisplayName = "Skills Loader Side";
 std::string SkillsNonLoaderSideDisplayName = "Skills Non Loader Side";
 
 bool target_red = true;
-bool vision_enabled = true;
+bool vision_enabled = false;
 int num_roller_fallback = 2;
 
 RobotMode curr_mode = INIT;

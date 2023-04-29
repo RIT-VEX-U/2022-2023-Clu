@@ -4,19 +4,20 @@
 #include "robot-config.h"
 #include "competition/autonomous_clu.h"
 #include "automation.h"
+#include "competition/autonomous.h"
 
 void test1_opcontrol()
 {
   target_red = true;
   vision_enabled = true;
   // Test1: Match Auto Testing
-  while(imu.isCalibrating()){}
+  // while(imu.isCalibrating()){}
 
+  autonomous();
   // Set up screen stuff
   // vexDelay(5000);
-  // clu_auto_current().run();
-  clu_skills_current().run();
-  // tune_shooting();
+  
+  tune_shooting();
   
   programmers_opcontrol();
 }

@@ -15,8 +15,8 @@ void flap_down()
   flapup_solenoid.set(true);
 }
 
-#define BLUE_HUE 115
-#define RED_HUE 22
+#define BLUE_HUE 160
+#define RED_HUE 21
 #define NEUTRAL_BAND 10
 
 Pepsi get_roller_scored()
@@ -71,7 +71,7 @@ bool SpinRollerCommand::run()
 {
   CommandController cmd;
   cmd.add(new DriveForwardCommand(drive_sys, drive_fast_mprofile, 12, directionType::fwd), 0.5);
-  cmd.add(new DriveStopCommand(drive_sys));
+  cmd.add(new FunctionCommand([](){ drive_sys.drive_tank(0.2, 0.2); return true;}));
   cmd.add_delay(800);
   cmd.run();
 

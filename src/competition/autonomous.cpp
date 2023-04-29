@@ -10,6 +10,7 @@
 CommandController auto_loader_side();
 CommandController prog_skills_loader_side();
 
+#define MATCH
 
 /**
  * Contains all the code run during autonomous.
@@ -21,31 +22,21 @@ void autonomous()
       vexDelay(20);
     }
 
-    // CommandController *current_auto = NULL;
+    #ifdef MATCH
 
-    // switch(curr_mode)
-    // {
-    //   case COMP:
-    //   case TEST1:
-    //   case TEST2:
-    //     *current_auto = auto_non_loader_side();
-    //     break;
-    //   case AUTOSKILLS:
-    //     *current_auto = prog_skills_non_loader_side();
-    //     break;
+    CommandController cmd1 = clu_auto_current_pt1();
+    cmd1.run();
 
-    //   default:
-    //     break;
-    // }
+    if(imu.installed() == true)
+    {
+      CommandController cmd2 = clu_auto_current_pt2();
+      cmd2.run();
+    }
 
-    // if(current_auto != NULL)
-    // {
-    //   current_auto->run();
-    //   delete current_auto;
-    // }
-    
-    // auto_non_loader_side().run();
-    // prog_skills_non_loader_side().run();
+    #else
+    CommandController cmd = clu_skills_current();
+    cmd.run();
+    #endif
 
     flywheel_sys.stop();
     intake.stop();
