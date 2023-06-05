@@ -15,9 +15,9 @@ void flap_down()
   flapup_solenoid.set(true);
 }
 
-#define BLUE_HUE 160
+#define BLUE_HUE 200
 #define RED_HUE 21
-#define NEUTRAL_BAND 10
+#define NEUTRAL_BAND 0
 
 Pepsi get_roller_scored()
 {

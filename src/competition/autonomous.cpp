@@ -27,10 +27,11 @@ void autonomous()
     CommandController cmd1 = clu_auto_current_pt1();
     cmd1.run();
 
+
     if(imu.installed() == true)
     {
-      CommandController cmd2 = clu_auto_current_pt2();
-      cmd2.run();
+      // CommandController cmd2 = clu_auto_current_pt2();
+      // cmd2.run();
     }
 
     #else
@@ -38,7 +39,7 @@ void autonomous()
     cmd.run();
     #endif
 
-    flywheel_sys.stop();
+    // flywheel_sys.stop();
     intake.stop();
     drive_sys.stop();
 

@@ -97,6 +97,7 @@ void programmers_opcontrol()
     }
 
     // Debug Out
+    roller_sensor.setLightPower(100, pct);
     Pepsi rol = get_roller_scored();
     string rol_str = (rol == RED) ? "R" : (rol == BLUE) ? "B" : "N";
     printf("X: %2f, Y: %2f, R: %2f, Rol: %s|%0f\n",
